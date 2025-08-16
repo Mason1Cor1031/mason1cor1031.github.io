@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="theme-color" content="#0f172a">
@@ -59,9 +58,9 @@
   .stack{display:flex;gap:8px;flex-wrap:wrap}
   table{width:100%;border-collapse:collapse}
   th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left;font-size:13px}
-  th{position:sticky;top:54px;background:var(--panel);z-index:2}
+  th{position:sticky;top:0;background:var(--panel);z-index:3}
   tr:hover{background:#0b1324}
-  .number{width:74px}
+  .number{width:100px;text-align:right}
   .right{text-align:right}
   .small{font-size:12px;color:#cbd5e1}
   .tag{padding:2px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:#12263f}
@@ -72,7 +71,7 @@
   .footer-bar{position:fixed;left:0;right:0;bottom:0;padding:6px 10px;background:linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.95) 30%, rgba(15,23,42,1) 100%);backdrop-filter: blur(8px);z-index:5}
   .footer-bar .bar{max-width:1100px;margin:0 auto;display:flex;gap:8px;justify-content:space-between}
   .footer-bar .bar .left,.footer-bar .bar .right{display:flex;gap:8px;flex-wrap:wrap}
-  .range-row{display:grid;grid-template-columns:1fr 90px;gap:10px;align-items:center}
+  .range-row{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:center}
   input[type=range]{width:100%}
   .score-badge{font-weight:700;padding:4px 8px;border-radius:8px;background:#0b1b2b}
   .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
@@ -102,7 +101,7 @@
   <div class="tabs" role="tablist" aria-label="Sections">
     <button class="tab-btn active" data-tab="players">Players</button>
     <button class="tab-btn" data-tab="score">Score Player</button>
-    <button class="tab-btn" data-tab="batch">Batch Table</button>
+    <button class="tab-btn" data-tab="batch">Overall</button>
     <button class="tab-btn" data-tab="rankings">Rankings</button>
     <button class="tab-btn" data-tab="draft">Draft Board</button>
     <button class="tab-btn" data-tab="settings">Settings</button>
@@ -162,7 +161,7 @@
         </div>
       </div>
       <label for="notes">Notes</label>
-      <textarea id="notes" placeholder="Allergies, school, travel baseball, coach notes…"></textarea>
+      <textarea id="notes" placeholder="Allergies, school, travel ball, coach notes…"></textarea>
       <div class="stack">
         <button id="btnAddPlayer" class="btn primary">Save Player</button>
         <button id="btnClearPlayer" class="btn ghost">Clear Form</button>
@@ -179,7 +178,7 @@
             <label for="playerSearch" class="small">Search</label>
             <input id="playerSearch" type="text" placeholder="Search by ID or name">
             <button id="btnExportJSON" class="btn btn-sm">Export JSON</button>
-            <button id="btnExportCSV" class="btn btn-sm">Export CSV</button>
+            <button id="btnExportCSV" class="btn btn-sm">Export CSV (All)</button>
             <label class="btn btn-sm">
               <input id="importFile" type="file" accept=".json" class="hidden">
               Import JSON
@@ -421,13 +420,13 @@
     </div>
   </section>
 
-  <!-- BATCH TABLE -->
+  <!-- OVERALL (formerly Batch) -->
   <section id="batch" role="tabpanel">
     <div class="card">
-      <h2>Batch Grade – Main Attributes</h2>
-      <div class="small muted">Tip: You can enter numbers (1–5) directly. Changes save as you type.</div>
+      <h2>Overall – Main Attributes</h2>
+      <div class="small muted">Tip: Enter numbers (1–5). Changes save as you type.</div>
       <div style="overflow:auto;max-height:58vh;margin-top:10px">
-        <table id="batchTable" aria-label="Batch grading table">
+        <table id="batchTable" aria-label="Overall grading table">
           <thead>
             <tr>
               <th>ID</th>
@@ -435,6 +434,8 @@
               <th>Arm</th>
               <th>Field</th>
               <th>Hands</th>
+              <th>Footwork</th>
+              <th>IQ</th>
               <th>Fly</th>
               <th>Bat</th>
               <th>H→1st (s)</th>
@@ -456,9 +457,9 @@
         <div><h2>Overall Rankings</h2></div>
         <div class="right"><button id="btnRefreshRanks" class="btn btn-sm">Recompute</button></div>
       </div>
-      <div style="overflow:auto;max-height:40vh">
+      <div style="overflow:auto;max-height:48vh">
         <table id="overallRankTable">
-          <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">Arm</th><th class="small">Field</th><th class="small">Hands</th><th class="small">Fly</th><th class="small">Bat</th><th class="small">Spd</th></tr></thead>
+          <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">Arm</th><th class="small">Field</th><th class="small">Hands</th><th class="small">Foot</th><th class="small">IQ</th><th class="small">Fly</th><th class="small">Bat</th><th class="small">Spd</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -470,7 +471,7 @@
           <div><h2>Pitchers</h2></div>
           <div class="right"><button id="btnExportPitchCSV" class="btn btn-sm">Export Pitchers CSV</button></div>
         </div>
-        <div style="overflow:auto;max-height:40vh">
+        <div style="overflow:auto;max-height:48vh">
           <table id="pitchRankTable">
             <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">K%</th><th class="small">Cmd</th><th class="small">Mech</th><th class="small">Velo</th></tr></thead>
             <tbody></tbody>
@@ -482,7 +483,7 @@
           <div><h2>Catchers</h2></div>
           <div class="right"><button id="btnExportCatchCSV" class="btn btn-sm">Export Catchers CSV</button></div>
         </div>
-        <div style="overflow:auto;max-height:40vh">
+        <div style="overflow:auto;max-height:48vh">
           <table id="catchRankTable">
             <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">Recv</th><th class="small">Blk</th><th class="small">Throw</th><th class="small">Pop</th></tr></thead>
             <tbody></tbody>
@@ -529,6 +530,8 @@
         <div><label>Arm</label><input id="w_ov_arm" type="number" min="0" max="100" step="1"></div>
         <div><label>Field</label><input id="w_ov_field" type="number" min="0" max="100" step="1"></div>
         <div><label>Hands</label><input id="w_ov_receiving" type="number" min="0" max="100" step="1"></div>
+        <div><label>Footwork</label><input id="w_ov_footwork" type="number" min="0" max="100" step="1"></div>
+        <div><label>IQ</label><input id="w_ov_iq" type="number" min="0" max="100" step="1"></div>
         <div><label>Fly</label><input id="w_ov_flyball" type="number" min="0" max="100" step="1"></div>
         <div><label>Bat</label><input id="w_ov_bat" type="number" min="0" max="100" step="1"></div>
         <div><label>Speed</label><input id="w_ov_speed" type="number" min="0" max="100" step="1"></div>
@@ -625,7 +628,7 @@
         <li><strong>Add Players</strong> with the exact ID stickers you'll use on the field.</li>
         <li><strong>Score Player</strong> by selecting ID and entering the six quick grades that match your stations: Arm, Fielding, Hands, Fly Ball, Batting, and Speed (use Home→1st time if you have it).</li>
         <li><strong>Pitchers & Catchers</strong> are graded separately. Enter strikes/total for strike %, pop time (if measured), and use the sliders for the rest.</li>
-        <li><strong>Batch Table</strong> lets you enter or adjust grades for many kids at once.</li>
+        <li><strong>Overall</strong> lets you enter or adjust grades for many kids at once (now includes Footwork & IQ).</li>
         <li><strong>Rankings</strong> are computed automatically based on your weights. Export CSV if you want a backup.</li>
         <li><strong>Draft Board</strong> gives you 12 roster slots. Add by ID or from rankings.</li>
       </ol>
@@ -635,7 +638,7 @@
       <h2>Default Weights & Philosophy</h2>
       <p>Defaults are tuned for 9U where run prevention, ball handling, and throwing consistency win more games than raw power.</p>
       <ul>
-        <li><strong>Overall</strong>: Arm 20%, Fielding 20%, Hands 10%, Fly 10%, Bat 25%, Speed 15%.</li>
+        <li><strong>Overall</strong>: Arm 20%, Fielding 20%, Hands 10%, Footwork 0%, IQ 0%, Fly 10%, Bat 25%, Speed 15%.</li>
         <li><strong>Pitcher</strong>: Strike % 30%, Command 25%, Mechanics 20%, Velocity 15%, Composure 5%, PFP 5%.</li>
         <li><strong>Catcher</strong>: Receiving 25%, Blocking 20%, Exchange 15%, Throw Accuracy 15%, Pop Time 10%, Leadership 10%, Stamina 5%.</li>
       </ul>
@@ -671,16 +674,15 @@ const LS_KEYS = {
 
 const Default = {
   settings: {
-    overallWeights: { arm:20, fielding:20, receiving:10, flyball:10, bat:25, speed:15 },
+    overallWeights: { arm:20, fielding:20, receiving:10, footwork:0, iq:0, flyball:10, bat:25, speed:15 },
     speedThresholds: { s5:5.7, s4:6.1, s3:6.6, s2:7.1 },
     popThresholds:   { s5:2.7, s4:2.9, s3:3.2, s2:3.5 },
     veloThresholds:  { s5:55,  s4:52,  s3:48,  s2:44  }
-    // 5 points: best threshold; 4: next; 3: next; 2: next; else 1
   }
 };
 
 let players = [];
-let scores  = {};     // id -> { overall:{arm,fielding,receiving,flyball,bat,speed,time}, pitcher:{}, catcher:{} }
+let scores  = {};     // id -> { overall:{...}, pitcher:{...}, catcher:{} }
 let settings = {};
 let drafted = [];
 
@@ -767,11 +769,6 @@ function switchTab(tab){
   if(tab==='draft') renderDraft();
 }
 
-function toast(msg){
-  // lightweight toast via alert-like; for mobile reliability keep simple
-  console.log(msg);
-}
-
 function renderPlayers(){
   const tb = byId('playersTable').querySelector('tbody');
   tb.innerHTML = '';
@@ -809,9 +806,9 @@ function renderFootCounts(){
   let o=0, pi=0, ca=0;
   ids.forEach(id => {
     const s = scores[id]||{};
-    if(s.overall && s.overall.total) o++;
-    if(s.pitcher && s.pitcher.total) pi++;
-    if(s.catcher && s.catcher.total) ca++;
+    if(s.overall && s.overall.total!=null) o++;
+    if(s.pitcher && s.pitcher.total!=null) pi++;
+    if(s.catcher && s.catcher.total!=null) ca++;
   });
   byId('footOverall').textContent = `${o}/${players.length}`;
   byId('footPitch').textContent   = `${pi}/${players.length}`;
@@ -861,7 +858,6 @@ function addOrUpdatePlayer(){
   if(existing>=0){
     players[existing] = p;
   }else{
-    // enforce uniqueness
     if(!ensureUniqueId(id)){ alert('That Player ID already exists. Choose a unique ID.'); return; }
     players.push(p);
   }
@@ -953,7 +949,6 @@ function loadScoreForm(id){
 }
 
 function gatherScoreForm(){
-  // Coerce empty -> null
   const val = v => {
     if(v===undefined || v===null) return null;
     const t = (''+v).trim();
@@ -999,7 +994,6 @@ function gatherScoreForm(){
   };
   c.popScore = computePopScore(c.pop);
 
-  // if time present, override speed score
   const sp = computeSpeedScore(o.h1time);
   if(sp!=null){
     o.speed = sp;
@@ -1013,6 +1007,8 @@ function computeOverallTotal(o){
     {val:o.arm, wt:w.arm},
     {val:o.fielding, wt:w.fielding},
     {val:o.receiving, wt:w.receiving},
+    {val:o.footwork, wt:w.footwork},
+    {val:o.iq, wt:w.iq},
     {val:o.flyball, wt:w.flyball},
     {val:o.bat, wt:w.bat},
     {val:o.speed, wt:w.speed}
@@ -1030,7 +1026,7 @@ function computePitcherTotal(p){
     comp: Number(byId('w_pi_comp').value||0),
     pfp:  Number(byId('w_pi_pfp').value||0)
   };
-  const spctScore = p.spct!=null ? (p.spct>=70?5: p.spct>=60?4: p.spct>=50?3: p.spct>=40?2:1) : null; // generic bins
+  const spctScore = p.spct!=null ? (p.spct>=70?5: p.spct>=60?4: p.spct>=50?3: p.spct>=40?2:1) : null;
   const total = weightedAverage([
     {val: spctScore, wt: w.spct},
     {val: p.command, wt: w.cmd},
@@ -1067,7 +1063,6 @@ function computeCatcherTotal(c){
 
 function updateKpis(){
   const data = gatherScoreForm();
-  // display computed subs
   byId('ov_speed_score').textContent = (data.overall.speed!=null?data.overall.speed:'—');
   byId('pi_spct').value = (data.pitcher.spct!=null?data.pitcher.spct.toFixed(0)+'%':'');
   byId('pi_mph_score').textContent = (data.pitcher.mphScore!=null?data.pitcher.mphScore:'—');
@@ -1086,11 +1081,12 @@ function saveScoresFromForm(){
   const d = gatherScoreForm();
   if(!d.id){ alert('Select a Player ID first.'); return; }
   scores[d.id] = scores[d.id] || {};
-  scores[d.id].overall = d.overall;
+  // Merge overall to preserve footwork & IQ from Overall table
+  scores[d.id].overall = Object.assign({}, (scores[d.id].overall||{}), d.overall);
   scores[d.id].pitcher = d.pitcher;
   scores[d.id].catcher = d.catcher;
   scores[d.id].notes   = d.notes;
-  scores[d.id].overall.total = computeOverallTotal(d.overall);
+  scores[d.id].overall.total = computeOverallTotal(scores[d.id].overall);
   scores[d.id].pitcher.total = computePitcherTotal(d.pitcher);
   scores[d.id].catcher.total = computeCatcherTotal(d.catcher);
   saveScores();
@@ -1116,13 +1112,13 @@ function clearScoresForm(){
   updateKpis();
 }
 
-/* ========= Batch Table ========= */
+/* ========= Overall (Batch) Table ========= */
 function renderBatch(){
   const tb = byId('batchTable').querySelector('tbody');
   tb.innerHTML='';
   players.forEach(p => {
     const s = scores[p.id]?.overall || {};
-    const total = scores[p.id]?.overall?.total;
+    const total = computeOverallTotal(s);
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="mono">${p.id}</td>
@@ -1130,6 +1126,8 @@ function renderBatch(){
       <td><input data-id="${p.id}" data-k="arm" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.arm??''}"></td>
       <td><input data-id="${p.id}" data-k="fielding" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.fielding??''}"></td>
       <td><input data-id="${p.id}" data-k="receiving" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.receiving??''}"></td>
+      <td><input data-id="${p.id}" data-k="footwork" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.footwork??''}"></td>
+      <td><input data-id="${p.id}" data-k="iq" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.iq??''}"></td>
       <td><input data-id="${p.id}" data-k="flyball" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.flyball??''}"></td>
       <td><input data-id="${p.id}" data-k="bat" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.bat??''}"></td>
       <td><input data-id="${p.id}" data-k="h1time" class="number batch" type="number" min="4" max="10" step="0.1" value="${s.h1time??''}"></td>
@@ -1149,7 +1147,6 @@ function renderBatch(){
       scores[id].overall = scores[id].overall || {};
       const v = inp.value===''? null : Number(inp.value);
       scores[id].overall[k] = v;
-      // recompute speed score if time changed
       if(k==='h1time'){
         const sp = computeSpeedScore(v);
         scores[id].overall.speed = (sp!=null?sp:null);
@@ -1175,7 +1172,7 @@ function renderRankings(){
   // overall
   const oData = players.map(p => {
     const s = scores[p.id]?.overall || {};
-    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total, o:s };
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:computeOverallTotal(s), o:s };
   }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
 
   const tbO = byId('overallRankTable').querySelector('tbody');
@@ -1184,7 +1181,8 @@ function renderRankings(){
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${i+1}</td><td class="mono">${r.id}</td><td>${r.name}</td><td class="right">${r.total.toFixed(2)}</td>
       <td class="right small">${r.o.arm??''}</td><td class="right small">${r.o.fielding??''}</td>
-      <td class="right small">${r.o.receiving??''}</td><td class="right small">${r.o.flyball??''}</td>
+      <td class="right small">${r.o.receiving??''}</td><td class="right small">${r.o.footwork??''}</td>
+      <td class="right small">${r.o.iq??''}</td><td class="right small">${r.o.flyball??''}</td>
       <td class="right small">${r.o.bat??''}</td><td class="right small">${r.o.speed??''}</td>`;
     tbO.appendChild(tr);
   });
@@ -1192,7 +1190,7 @@ function renderRankings(){
   // pitchers
   const pData = players.map(p => {
     const s = scores[p.id]?.pitcher || {};
-    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total, s };
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total!=null?s.total:computePitcherTotal(s), s };
   }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
   const tbP = byId('pitchRankTable').querySelector('tbody');
   tbP.innerHTML='';
@@ -1208,7 +1206,7 @@ function renderRankings(){
   // catchers
   const cData = players.map(p => {
     const s = scores[p.id]?.catcher || {};
-    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total, s };
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total!=null?s.total:computeCatcherTotal(s), s };
   }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
   const tbC = byId('catchRankTable').querySelector('tbody');
   tbC.innerHTML='';
@@ -1220,9 +1218,8 @@ function renderRankings(){
     tbC.appendChild(tr);
   });
 
-  // add quick-add to draft from rankings
+  // quick add to draft
   [tbO, tbP, tbC].forEach(tb => {
-    // add a button column? Keep UI simple in v1; add tap-to-copy id
     Array.from(tb.querySelectorAll('tr')).forEach(tr => {
       tr.style.cursor = 'pointer';
       tr.title = 'Tap to add to Draft Board';
@@ -1238,7 +1235,6 @@ function renderRankings(){
 function renderDraft(){
   const div = byId('draftList');
   div.innerHTML='';
-  // show 12 slots
   for(let i=0;i<12;i++){
     const id = drafted[i];
     const p = id ? findPlayer(id) : null;
@@ -1288,6 +1284,8 @@ function renderSettings(){
   byId('w_ov_arm').value = settings.overallWeights.arm;
   byId('w_ov_field').value = settings.overallWeights.fielding;
   byId('w_ov_receiving').value = settings.overallWeights.receiving;
+  byId('w_ov_footwork').value = settings.overallWeights.footwork || 0;
+  byId('w_ov_iq').value = settings.overallWeights.iq || 0;
   byId('w_ov_flyball').value = settings.overallWeights.flyball;
   byId('w_ov_bat').value = settings.overallWeights.bat;
   byId('w_ov_speed').value = settings.overallWeights.speed;
@@ -1309,7 +1307,7 @@ function renderSettings(){
   byId('t_velo_3').value = settings.veloThresholds.s3;
   byId('t_velo_2').value = settings.veloThresholds.s2;
 
-  // pitcher & catcher weights default from help section if not present, set now
+  // pitcher & catcher defaults if not present
   if(!byId('w_pi_spct').value){
     byId('w_pi_spct').value = 30;
     byId('w_pi_cmd').value = 25;
@@ -1331,7 +1329,7 @@ function renderSettings(){
 }
 
 function updateWeightsSums(){
-  const sumO = ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_flyball','w_ov_bat','w_ov_speed']
+  const sumO = ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed']
     .map(id=>Number(byId(id).value||0)).reduce((a,b)=>a+b,0);
   byId('sumOverall').textContent = sumO;
 
@@ -1348,7 +1346,6 @@ function normalizeWeights(ids){
   const vals = ids.map(id=>Number(byId(id).value||0));
   const sum = vals.reduce((a,b)=>a+b,0) || 1;
   const norm = vals.map(v=> Math.round((v/sum)*100));
-  // adjust rounding to exactly 100
   let diff = 100 - norm.reduce((a,b)=>a+b,0);
   for(let i=0; diff!==0; i=(i+1)%norm.length){
     if(diff>0){ norm[i]++; diff--; }
@@ -1364,6 +1361,8 @@ function saveSettingsFromUi(){
     arm: Number(byId('w_ov_arm').value||0),
     fielding: Number(byId('w_ov_field').value||0),
     receiving: Number(byId('w_ov_receiving').value||0),
+    footwork: Number(byId('w_ov_footwork').value||0),
+    iq: Number(byId('w_ov_iq').value||0),
     flyball: Number(byId('w_ov_flyball').value||0),
     bat: Number(byId('w_ov_bat').value||0),
     speed: Number(byId('w_ov_speed').value||0)
@@ -1387,7 +1386,6 @@ function saveSettingsFromUi(){
     s2: Number(byId('t_velo_2').value||0)
   };
   saveSettings();
-  // refresh live KPI (speed/pop scores depend on thresholds)
   updateKpis();
 }
 
@@ -1397,12 +1395,34 @@ function toCSV(rows){
     if(v==null) return '';
     const s = (''+v).replace(/"/g,'""');
     return /[",\n]/.test(s) ? '"'+s+'"' : s;
-  }).join(',')).join('\n');
+  }).join(',')).join('\\n');
 }
 
 function exportPlayersCSV(){
-  const rows = [['ID','First','Last','Age','Bats','Throws','P?','C?','Notes']];
-  players.forEach(p => rows.push([p.id,p.first,p.last,p.age,p.bats,p.throws,p.wPitch?'Y':'',p.wCatch?'Y':'',p.notes||'']));
+  const header = [
+    'ID','First','Last','Age','Bats','Throws','P?','C?','Notes',
+    'Overall_Arm','Overall_Field','Overall_Hands','Overall_Footwork','Overall_IQ','Overall_Fly','Overall_Bat','Overall_H1Time','Overall_SpeedScore','Overall_Total',
+    'Pitcher_Is','Pitcher_Strikes','Pitcher_TotalPitches','Pitcher_StrikePct','Pitcher_Command','Pitcher_Mechanics','Pitcher_VeloMPH','Pitcher_VeloScore','Pitcher_Composure','Pitcher_PFP','Pitcher_Secondary','Pitcher_Total',
+    'Catcher_Is','Catcher_Receiving','Catcher_Blocking','Catcher_Exchange','Catcher_ThrowAcc','Catcher_PopTime','Catcher_PopScore','Catcher_Leadership','Catcher_Stamina','Catcher_Total',
+    'Score_Notes'
+  ];
+  const rows = [header];
+  players.forEach(p => {
+    const S = scores[p.id] || {};
+    const sO = S.overall || {};
+    const sP = S.pitcher || {};
+    const sC = S.catcher || {};
+    const oTotal = (sO.total!=null)? sO.total : computeOverallTotal(sO);
+    const pTotal = (sP.total!=null)? sP.total : computePitcherTotal(sP);
+    const cTotal = (sC.total!=null)? sC.total : computeCatcherTotal(sC);
+    rows.push([
+      p.id, p.first||'', p.last||'', p.age||'', p.bats||'', p.throws||'', p.wPitch?'Y':'', p.wCatch?'Y':'', (S.notes)||p.notes||'',
+      sO.arm??'', sO.fielding??'', sO.receiving??'', sO.footwork??'', sO.iq??'', sO.flyball??'', sO.bat??'', sO.h1time??'', sO.speed??'', oTotal!=null?oTotal.toFixed(2):'',
+      (sP.is?'Y':'')||'', sP.strikes??'', sP.total??'', sP.spct!=null? (sP.spct.toFixed(0)+'%'):'', sP.command??'', sP.mech??'', sP.mph??'', sP.mphScore??'', sP.comp??'', sP.pfp??'', sP.secondary?'Y':'', pTotal!=null?pTotal.toFixed(2):'',
+      (sC.is?'Y':'')||'', sC.recv??'', sC.block??'', sC.xfer??'', sC.acc??'', sC.pop??'', sC.popScore??'', sC.lead??'', sC.stam??'', cTotal!=null?cTotal.toFixed(2):'',
+      (S.notes)||''
+    ]);
+  });
   return toCSV(rows);
 }
 
@@ -1410,8 +1430,9 @@ function exportPitchersCSV(){
   const rows = [['ID','Name','Score','Strike%','Command','Mechanics','Velo','Composure','PFP','Secondary']];
   players.forEach(p => {
     const s = scores[p.id]?.pitcher || {};
-    if(s.total!=null){
-      rows.push([p.id, (p.first||'')+' '+(p.last||''), s.total, s.spct!=null? s.spct.toFixed(0)+'%':'',
+    const total = s.total!=null ? s.total : computePitcherTotal(s);
+    if(total!=null){
+      rows.push([p.id, (p.first||'')+' '+(p.last||''), total, s.spct!=null? s.spct.toFixed(0)+'%':'',
         s.command??'', s.mech??'', s.mph??'', s.comp??'', s.pfp??'', s.secondary?'Y':'']);
     }
   });
@@ -1422,8 +1443,9 @@ function exportCatchersCSV(){
   const rows = [['ID','Name','Score','Receiving','Blocking','Exchange','ThrowAcc','PopTime','Leadership','Stamina']];
   players.forEach(p => {
     const s = scores[p.id]?.catcher || {};
-    if(s.total!=null){
-      rows.push([p.id, (p.first||'')+' '+(p.last||''), s.total, s.recv??'', s.block??'', s.xfer??'', s.acc??'', s.pop??'', s.lead??'', s.stam??'']);
+    const total = s.total!=null ? s.total : computeCatcherTotal(s);
+    if(total!=null){
+      rows.push([p.id, (p.first||'')+' '+(p.last||''), total, s.recv??'', s.block??'', s.xfer??'', s.acc??'', s.pop??'', s.lead??'', s.stam??'']);
     }
   });
   return toCSV(rows);
@@ -1465,7 +1487,6 @@ function importJSON(file){
   reader.readAsText(file);
 }
 
-/* Quick backup: downloads JSON; restore selects file */
 function quickBackup(){
   download('9u_draft_backup.json', exportJSON());
 }
@@ -1501,7 +1522,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadScoreForm(id);
   });
   ['ov_h1_time','pi_strikes','pi_total','pi_mph','ca_pop'].forEach(id => byId(id).addEventListener('input', updateKpis));
-  // any input change update KPIs
   document.querySelectorAll('#score input[type="range"], #score input[type="number"]').forEach(el => el.addEventListener('input', updateKpis));
 
   byId('btnSaveScores').addEventListener('click', saveScoresFromForm);
@@ -1519,23 +1539,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if(confirm('Clear all 12 draft slots?')){ drafted=[]; saveDraft(); renderDraft(); }
   });
 
-  // settings events
-  ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_flyball','w_ov_bat','w_ov_speed',
+  ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed',
    'w_pi_spct','w_pi_cmd','w_pi_mech','w_pi_velo','w_pi_comp','w_pi_pfp',
    'w_ca_recv','w_ca_block','w_ca_xfer','w_ca_acc','w_ca_pop','w_ca_lead','w_ca_stam',
    't_speed_5','t_speed_4','t_speed_3','t_speed_2',
    't_pop_5','t_pop_4','t_pop_3','t_pop_2',
    't_velo_5','t_velo_4','t_velo_3','t_velo_2'
   ].forEach(id => byId(id).addEventListener('input', () => { updateWeightsSums(); saveSettingsFromUi(); }));
-  byId('btnNormOverall').addEventListener('click', () => normalizeWeights(['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_flyball','w_ov_bat','w_ov_speed']));
+  byId('btnNormOverall').addEventListener('click', () => normalizeWeights(['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed']));
   byId('btnNormPitch').addEventListener('click', () => normalizeWeights(['w_pi_spct','w_pi_cmd','w_pi_mech','w_pi_velo','w_pi_comp','w_pi_pfp']));
   byId('btnNormCatch').addEventListener('click', () => normalizeWeights(['w_ca_recv','w_ca_block','w_ca_xfer','w_ca_acc','w_ca_pop','w_ca_lead','w_ca_stam']));
 
-  // export/import
   byId('btnExportJSON').addEventListener('click', () => download('9u_draft_data.json', exportJSON()));
   byId('btnExportCSV').addEventListener('click', () => {
     const csv = exportPlayersCSV();
-    download('players.csv', csv);
+    download('players_all.csv', csv);
   });
   byId('importFile').addEventListener('change', e => {
     const file = e.target.files[0]; if(file) importJSON(file);
@@ -1549,23 +1567,9 @@ document.addEventListener('DOMContentLoaded', () => {
     e.target.value='';
   });
 
-  byId('btnResetAll').addEventListener('click', () => {
-    if(confirm('Erase ALL data on this device for this app?')){
-      localStorage.removeItem(LS_KEYS.players);
-      localStorage.removeItem(LS_KEYS.scores);
-      localStorage.removeItem(LS_KEYS.settings);
-      localStorage.removeItem(LS_KEYS.draft);
-      loadAll();
-      renderPlayers(); renderSettings(); renderBatch(); renderRankings(); renderDraft();
-      alert('All data cleared.');
-    }
-  });
-
-  // initial ranks/draft
   renderRankings();
   renderDraft();
 });
-
 </script>
 
 <script>
@@ -1587,6 +1591,5 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
-
 </body>
 </html>
