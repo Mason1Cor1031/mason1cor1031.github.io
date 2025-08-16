@@ -1,0 +1,24 @@
+{
+  "name": "9U Draft Evaluation System",
+  "short_name": "9U Draft",
+  "description": "Offline-capable 9U baseball multi-player draft evaluator.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#1e3c72",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

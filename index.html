@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>9U Multi-Player Draft System — Mobile Optimized</title>
+  <style>
+    /* --- Base Reset & Theme --- */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root{
+      --bg:#f8f9fa;
+      --card:#ffffff;
+      --text:#212529;
+      --muted:#6c757d;
+      --muted-2:#495057;
+      --brand-1:#1e3c72;
+      --brand-2:#2a5298;
+      --good:#28a745;
+      --warn:#ffc107;
+      --bad:#dc3545;
+      --info:#007bff;
+      --purple:#6f42c1;
+      --shadow: 0 2px 6px rgba(0,0,0,.08);
+      --radius: 12px;
+    }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 10px; line-height: 1.35; }
+    .header {
+      background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
+      color: #fff; padding: 16px; text-align: center; border-radius: var(--radius); margin-bottom: 12px;
+    }
+    .header h1{ font-size: clamp(18px, 3.8vw, 28px); font-weight: 800; letter-spacing:.2px; }
+    .header p{ opacity:.95; margin-top: 6px; font-size: clamp(12px, 2.8vw, 14px); }
+
+    .controls, .export-controls, .roster-table { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .controls { padding: 12px; margin-bottom: 12px; }
+    .control-group, .filter-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px; }
+    .control-group label { font-weight: 700; min-width: 120px; font-size: 13px; color: var(--muted-2); }
+    .control-group input, .control-group select, .control-group button {
+      padding: 10px 12px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 14px; background:#fff;
+    }
+    .control-group input[type="number"]{ width: 100px; }
+    .control-group .quick-add{ display: grid; grid-template-columns: 1fr .5fr 1fr .7fr auto; gap: 8px; width: 100%; }
+    .control-group button { background: var(--good); color: #fff; border-color: var(--good); cursor: pointer; font-weight: 800; }
+    .control-group button:active{ transform: scale(.98); }
+
+    .filter-controls input, .filter-controls select { padding: 10px 12px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 14px; background:#fff; }
+    .search-input { flex: 1; min-width: 200px; }
+
+    /* --- Table Shell --- */
+    .roster-table { margin-bottom: 12px; overflow: hidden; }
+    .table-header {
+      background: #343a40; color: #fff; padding: 12px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .table-header h3{ font-size: 16px; letter-spacing:.2px; }
+    .player-count{ font-size: 12px; opacity: .9; }
+
+    .table-container{ position: relative; overflow-x: auto; overflow-y: auto; max-height: 70vh; -webkit-overflow-scrolling: touch; }
+
+    table{ width: 100%; border-collapse: collapse; }
+    th{ position: sticky; top: 0; z-index: 20; background: #6c757d; color: #fff; padding: 10px 6px; text-align: center; font-size: 11px; font-weight: 800; }
+    td{ padding: 8px 6px; border-bottom: 1px solid #e9ecef; text-align: center; font-size: 12px; background:#fff; }
+    th.player-info, td.player-info { text-align: left; min-width: 200px; left: 0; position: sticky; z-index: 25; background: #fff; }
+    .player-name{ font-weight: 800; color: var(--muted-2); }
+    .player-details{ color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+    /* --- Inputs --- */
+    .rating-input{
+      width: 36px; height: 36px; border:2px solid #ddd; border-radius: 8px; text-align: center; font-weight: 800; font-size: 12px;
+    }
+    .rating-input:focus{ outline: none; border-color: var(--info); }
+    .rating-1 { background: #f8d7da; border-color: var(--bad); }
+    .rating-2 { background: #fff3cd; border-color: var(--warn); }
+    .rating-3 { background: #d4edda; border-color: var(--good); }
+    .rating-4 { background: #cce5ff; border-color: var(--info); }
+    .rating-5 { background: #e2e3e5; border-color: var(--purple); }
+
+    .overall-score{ font-weight: 900; font-size: 14px; padding: 10px 8px; border-radius: 8px; }
+    .score-excellent { background: #d4edda; color: #155724; }
+    .score-good { background: #cce5ff; color: #004085; }
+    .score-average { background: #fff3cd; color: #856404; }
+    .score-below { background: #f8d7da; color: #721c24; }
+
+    .position-badge{ display: inline-block; padding:2px 6px; border-radius: 12px; font-size:10px; font-weight:800; margin:1px; }
+    .pitcher-badge { background: var(--warn); color: #212529; }
+    .catcher-badge { background: var(--bad); color: #fff; }
+
+    .notes-cell{ min-width: 160px; max-width: 240px; }
+    .notes-input{
+      width: 100%; min-height: 34px; border: 1px solid #ddd; border-radius: 8px; padding: 6px 8px; font-size: 11px; resize: vertical;
+    }
+
+    /* --- Actions --- */
+    .btn-small{
+      background: var(--bad); color: #fff; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 800;
+    }
+    .btn-small:active{ transform: scale(.98); }
+
+    /* --- Exports --- */
+    .export-controls{ padding: 10px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .export-controls h4{ font-size: 14px; margin-right: auto; color: var(--muted-2); }
+    .export-btn, .clear-btn{
+      border: none; padding: 10px 14px; border-radius: 10px; cursor: pointer; font-weight: 800; box-shadow: var(--shadow);
+    }
+    .export-btn{ background: var(--info); color: #fff; }
+    .clear-btn{ background: var(--bad); color: #fff; }
+
+    /* --- Edge Hint for Horizontal Scroll --- */
+    .table-container::after{
+      content:""; position: sticky; right: 0; top: 0; bottom: 0; width: 24px;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(0,0,0,.06));
+      pointer-events: none; z-index: 30;
+    }
+
+    /* --- Mobile stacking & compact UI --- */
+    @media (max-width: 900px){
+      .control-group .quick-add{ grid-template-columns: 1fr 1fr; }
+      .control-group .quick-add > *:nth-child(1){ grid-column: 1 / -1; }
+      .control-group .quick-add > *:nth-child(5){ grid-column: 1 / -1; }
+    }
+    @media (max-width: 680px){
+      .rating-input{ width: 30px; height: 30px; font-size: 11px; }
+      th, td{ padding: 6px 4px; }
+      .notes-input{ display: none; }
+      .notes-toggle{
+        display: inline-flex; align-items: center; gap: 6px; background:#f1f3f5; padding:6px 10px; border-radius: 8px; cursor: pointer; font-size:12px;
+      }
+      .notes-cell.open .notes-input{ display: block; margin-top: 6px; }
+    }
+    @media (max-width: 520px){
+      .control-group .quick-add{ grid-template-columns: 1fr; }
+      .control-group input, .control-group select, .control-group button, .filter-controls input, .filter-controls select{
+        min-height: 42px; font-size: 14px;
+      }
+      .export-btn, .clear-btn{ flex:1; min-width: 120px; }
+    }
+  </style>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#1e3c72">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+</head>
+<body>
+  <div class="header">
+    <h1>9U Baseball Draft Evaluation System</h1>
+    <p>Multi-Player Assessment Tool — evaluate up to 120 players efficiently</p>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <div class="quick-add">
+        <label for="newPlayerName" style="display:none">Quick Add Player</label>
+        <input type="text" id="newPlayerName" placeholder="Player Name" autocomplete="name" />
+        <input type="number" id="newPlayerAge" placeholder="Age" min="7" max="10" inputmode="numeric" />
+        <input type="text" id="newPlayerSize" placeholder="4'2&quot; / 65lbs" />
+        <select id="newPlayerExp" aria-label="Experience">
+          <option value="">Experience</option>
+          <option value="first-year">First Year</option>
+          <option value="1-year">1 Year</option>
+          <option value="2-years">2 Years</option>
+          <option value="3-plus">3+ Years</option>
+        </select>
+        <button id="addPlayerBtn">Add Player</button>
+      </div>
+    </div>
+
+    <div class="filter-controls">
+      <input type="text" id="searchFilter" class="search-input" placeholder="Search players by name..." />
+      <select id="expFilter" aria-label="Experience filter">
+        <option value="">All Experience Levels</option>
+        <option value="first-year">First Year</option>
+        <option value="1-year">1 Year</option>
+        <option value="2-years">2 Years</option>
+        <option value="3-plus">3+ Years</option>
+      </select>
+      <select id="positionFilter" aria-label="Position filter">
+        <option value="">All Positions</option>
+        <option value="pitcher">Potential Pitchers</option>
+        <option value="catcher">Potential Catchers</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="roster-table">
+    <div class="table-header">
+      <h3>Player Evaluation Grid</h3>
+      <div class="player-count">Players: <span id="playerCount">0</span> / 120</div>
+    </div>
+
+    <div class="table-container">
+      <table id="evaluationTable">
+        <thead>
+          <tr>
+            <th class="player-info">Player Info</th>
+            <th title="Glove Work & Positioning">Glove</th>
+            <th title="Footwork & Body Control">Footwork</th>
+            <th title="Arm Strength (SS to 1B)">Arm Str.</th>
+            <th title="Throwing Accuracy">Accuracy</th>
+            <th title="1B Receiving Skills">1B Rec.</th>
+            <th title="Ball Tracking/Reading">Tracking</th>
+            <th title="Catching Fly Balls">Fly Balls</th>
+            <th title="Outfield Arm Strength">OF Arm</th>
+            <th title="Throw to 2B Accuracy">OF Acc.</th>
+            <th title="Batting Stance & Setup">Stance</th>
+            <th title="Swing Mechanics">Swing</th>
+            <th title="Contact Quality">Contact</th>
+            <th title="Base Running Speed">Speed</th>
+            <th title="Base Running IQ">BR IQ</th>
+            <th title="Pitching Mechanics" class="pitcher-badge">P Mech</th>
+            <th title="Strike Zone Control" class="pitcher-badge">P Ctrl</th>
+            <th title="Velocity for Age" class="pitcher-badge">P Vel</th>
+            <th title="Mound Presence" class="pitcher-badge">P Pres</th>
+            <th title="Stance & Receiving" class="catcher-badge">C Rec</th>
+            <th title="Throwing to 2B" class="catcher-badge">C Throw</th>
+            <th title="Blocking/Framing" class="catcher-badge">C Block</th>
+            <th title="Leadership/Communication" class="catcher-badge">C Lead</th>
+            <th title="Effort & Hustle">Effort</th>
+            <th title="Coachability">Coach.</th>
+            <th title="Baseball IQ">IQ</th>
+            <th title="Overall Athleticism">Athlet.</th>
+            <th title="Overall Score">Overall</th>
+            <th title="Notes">Notes</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="playerTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="export-controls">
+    <h4>Export & Actions</h4>
+    <button class="export-btn" id="exportCsvBtn">Export to CSV</button>
+    <button class="export-btn" id="printBtn">Print Evaluation</button>
+    <button class="export-btn" id="rankingsBtn">Generate Draft Rankings</button>
+    <button class="export-btn" id="saveBtn">Save Progress</button>
+    <button class="export-btn" id="loadBtn">Load Progress</button>
+    <button class="clear-btn" id="clearBtn">Clear All Data</button>
+  </div>
+
+  <script>
+    let players = [];
+    let playerCounter = 0;
+
+    // Fundamental (position-agnostic) skills
+    const skillCategories = [
+      'glove','footwork','armStr','accuracy','firstBase',
+      'tracking','flyBalls','ofArm','ofAcc',
+      'stance','swing','contact','speed','brIQ',
+      'effort','coachability','iq','athleticism'
+    ];
+    const pitchingSkills = ['pMech','pCtrl','pVel','pPres'];
+    const catchingSkills = ['cRec','cThrow','cBlock','cLead'];
+
+    // --- Helpers ---
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+    function addPlayer() {
+      const name = $('#newPlayerName').value.trim();
+      const age = $('#newPlayerAge').value;
+      const size = $('#newPlayerSize').value.trim();
+      const experience = $('#newPlayerExp').value;
+
+      if(!name){ alert('Please enter a player name'); return; }
+
+      const player = {
+        id: ++playerCounter, name, age: age || '', size: size || '', experience: experience || '',
+        ratings: {}, notes: ''
+      };
+
+      players.push(player);
+      addPlayerRow(player);
+      updatePlayerCount();
+      clearAddForm();
+    }
+
+    function addPlayerRow(player){
+      const tbody = $('#playerTableBody');
+      const row = document.createElement('tr');
+      row.id = `player-${player.id}`;
+
+      const playerInfo = \`
+        <div class="player-name">\${player.name}</div>
+        <div class="player-details">
+          \${player.age ? \`Age: \${player.age}\` : ''}
+          \${player.size ? \` | \${player.size}\` : ''}
+          \${player.experience ? \` | \${player.experience}\` : ''}
+        </div>\`;
+
+      let html = \`<td class="player-info">\${playerInfo}</td>\`;
+
+      const allSkills = [...skillCategories, ...pitchingSkills, ...catchingSkills];
+      allSkills.forEach(skill => {
+        html += \`<td><input type="number" class="rating-input" min="1" max="5" inputmode="numeric" data-player="\${player.id}" data-skill="\${skill}" /></td>\`;
+      });
+
+      html += \`<td class="overall-score" id="overall-\${player.id}">0.0</td>\`;
+
+      html += \`
+        <td class="notes-cell">
+          <button class="notes-toggle" type="button" aria-expanded="false">📓 Notes</button>
+          <textarea class="notes-input" data-player="\${player.id}" placeholder="Notes..."></textarea>
+        </td>\`;
+
+      html += \`<td><button class="btn-small" onclick="removePlayer(\${player.id})">Remove</button></td>\`;
+
+      row.innerHTML = html;
+      tbody.appendChild(row);
+
+      // Wire up events for this row
+      allSkills.forEach(skill => {
+        const input = row.querySelector(\`input[data-skill="\${skill}"]\`);
+        input.addEventListener('change', e => updateRating(e.target));
+        input.addEventListener('keyup',  e => updateRatingColor(e.target));
+      });
+      const notes = row.querySelector('textarea.notes-input');
+      notes.addEventListener('change', e => updateNotes(e.target));
+
+      const toggle = row.querySelector('.notes-toggle');
+      toggle.addEventListener('click', () => {
+        const cell = toggle.closest('.notes-cell');
+        const isOpen = cell.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      });
+    }
+
+    function updateRating(input){
+      const playerId = input.getAttribute('data-player');
+      const skill = input.getAttribute('data-skill');
+      const value = parseInt(input.value) || 0;
+      const player = players.find(p => p.id == playerId);
+      if(player){
+        player.ratings[skill] = value;
+        updateOverallScore(playerId);
+        updateRatingColor(input);
+      }
+    }
+
+    function updateRatingColor(input){
+      const value = parseInt(input.value) || 0;
+      input.className = 'rating-input';
+      if(value>=1 && value<=5){ input.classList.add(\`rating-\${value}\`); }
+    }
+
+    function updateOverallScore(playerId){
+      const player = players.find(p => p.id == playerId);
+      if(!player) return;
+      const ratings = player.ratings;
+      let total = 0, count = 0;
+      skillCategories.forEach(skill => {
+        if(ratings[skill] && ratings[skill] > 0){ total += ratings[skill]; count++; }
+      });
+      const overallScore = count>0 ? (total / count) : 0;
+      const scoreEl = $(`#overall-\${playerId}`);
+      if(scoreEl){
+        scoreEl.textContent = overallScore.toFixed(1);
+        scoreEl.className = 'overall-score';
+        if(overallScore >= 4.0) scoreEl.classList.add('score-excellent');
+        else if(overallScore >= 3.5) scoreEl.classList.add('score-good');
+        else if(overallScore >= 2.5) scoreEl.classList.add('score-average');
+        else if(overallScore > 0) scoreEl.classList.add('score-below');
+      }
+    }
+
+    function updateNotes(textarea){
+      const playerId = textarea.getAttribute('data-player');
+      const player = players.find(p => p.id == playerId);
+      if(player){ player.notes = textarea.value; }
+    }
+
+    function removePlayer(playerId){
+      if(confirm('Are you sure you want to remove this player?')){
+        players = players.filter(p => p.id != playerId);
+        const row = $(`#player-\${playerId}`);
+        if(row) row.remove();
+        updatePlayerCount();
+      }
+    }
+
+    function updatePlayerCount(){ $('#playerCount').textContent = players.length; }
+
+    function clearAddForm(){
+      $('#newPlayerName').value='';
+      $('#newPlayerAge').value='';
+      $('#newPlayerSize').value='';
+      $('#newPlayerExp').value='';
+    }
+
+    function filterPlayers(){
+      const searchText = $('#searchFilter').value.toLowerCase();
+      const expFilter = $('#expFilter').value;
+      const positionFilter = $('#positionFilter').value;
+
+      $$('#playerTableBody tr').forEach(row => {
+        const name = row.querySelector('.player-name')?.textContent.toLowerCase() || '';
+        const details = row.querySelector('.player-details')?.textContent.toLowerCase() || '';
+        let show = true;
+        if(searchText && !name.includes(searchText)) show = false;
+        if(expFilter && !details.includes(expFilter)) show = false;
+        // Placeholder for position-based filter logic if needed later
+        row.style.display = show ? '' : 'none';
+      });
+    }
+
+    // --- Export / Print / Rankings / Persistence ---
+    function exportToCSV(){
+      let csv = 'Player Name,Age,Size,Experience,';
+      csv += skillCategories.join(',') + ',';
+      csv += pitchingSkills.join(',') + ',';
+      csv += catchingSkills.join(',') + ',';
+      csv += 'Overall Score,Notes\n';
+
+      players.forEach(player => {
+        csv += \`"\${player.name}",\${player.age},\${player.size},\${player.experience},\`;
+        skillCategories.forEach(s => { csv += \`\${player.ratings[s] || ''},\`; });
+        pitchingSkills.forEach(s => { csv += \`\${player.ratings[s] || ''},\`; });
+        catchingSkills.forEach(s => { csv += \`\${player.ratings[s] || ''},\`; });
+        const overallScore = calculateOverallScore(player);
+        const safeNotes = (player.notes || '').replace(/"/g, '""');
+        csv += \`\${overallScore},"\${safeNotes}"
+\`;
+      });
+      downloadCSV(csv, '9u-draft-evaluations.csv');
+    }
+
+    function calculateOverallScore(player){
+      const ratings = player.ratings;
+      let total = 0, count = 0;
+      skillCategories.forEach(skill => {
+        if(ratings[skill] && ratings[skill] > 0){ total += ratings[skill]; count++; }
+      });
+      return count>0 ? (total / count).toFixed(1) : '0.0';
+    }
+
+    function downloadCSV(csv, filename){
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.href = url; link.download = filename; link.style.visibility='hidden';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    function printTable(){ window.print(); }
+
+    function generateDraftRankings(){
+      const ranked = players
+        .map(p => ({
+          ...p,
+          overallScore: parseFloat(calculateOverallScore(p)),
+          pitchingScore: calculatePositionScore(p, pitchingSkills),
+          catchingScore: calculatePositionScore(p, catchingSkills)
+        }))
+        .sort((a,b) => b.overallScore - a.overallScore);
+
+      let out = 'DRAFT RANKINGS\n\n';
+      out += 'Overall Rankings:\n';
+      ranked.forEach((p, i) => { out += \`\${i+1}. \${p.name} - Overall: \${p.overallScore}
+\`; });
+
+      out += '\n\nTop Pitcher Candidates:\n';
+      ranked.filter(p => p.pitchingScore > 0).sort((a,b)=>b.pitchingScore-a.pitchingScore).slice(0,8)
+        .forEach((p,i)=>{ out += \`\${i+1}. \${p.name} - Pitching: \${p.pitchingScore.toFixed(1)}
+\`; });
+
+      out += '\n\nTop Catcher Candidates:\n';
+      ranked.filter(p => p.catchingScore > 0).sort((a,b)=>b.catchingScore-a.catchingScore).slice(0,5)
+        .forEach((p,i)=>{ out += \`\${i+1}. \${p.name} - Catching: \${p.catchingScore.toFixed(1)}
+\`; });
+
+      const w = window.open('', '_blank');
+      w.document.write(\`<pre style="font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding: 20px;">\${out}</pre>\`);
+    }
+
+    function calculatePositionScore(player, skills){
+      let total = 0, count = 0;
+      skills.forEach(s => { if(player.ratings[s] && player.ratings[s] > 0){ total += player.ratings[s]; count++; } });
+      return count>0 ? total / count : 0;
+    }
+
+    function saveToLocalStorage(){
+      const data = { players, playerCounter };
+      localStorage.setItem('9u-draft-data', JSON.stringify(data));
+      alert('Data saved successfully!');
+    }
+    function loadFromLocalStorage(){
+      const saved = localStorage.getItem('9u-draft-data');
+      if(saved){
+        const data = JSON.parse(saved);
+        players = data.players || [];
+        playerCounter = data.playerCounter || 0;
+        $('#playerTableBody').innerHTML = '';
+        players.forEach(p => {
+          addPlayerRow(p);
+          // restore ratings
+          Object.keys(p.ratings).forEach(skill => {
+            const input = document.querySelector(\`[data-player="\${p.id}"][data-skill="\${skill}"]\`);
+            if(input){ input.value = p.ratings[skill]; updateRatingColor(input); }
+          });
+          // restore notes
+          const notesInput = document.querySelector(\`textarea[data-player="\${p.id}"]\`);
+          if(notesInput){ notesInput.value = p.notes || ''; }
+          updateOverallScore(p.id);
+        });
+        updatePlayerCount();
+        alert('Data loaded successfully!');
+      } else {
+        alert('No saved data found.');
+      }
+    }
+    function clearAllData(){
+      if(confirm('Are you sure you want to clear all player data? This cannot be undone.')){
+        players = []; playerCounter = 0;
+        $('#playerTableBody').innerHTML = '';
+        updatePlayerCount();
+        localStorage.removeItem('9u-draft-data');
+      }
+    }
+
+    // --- Wire up global controls ---
+    $('#addPlayerBtn').addEventListener('click', addPlayer);
+    $('#searchFilter').addEventListener('keyup', filterPlayers);
+    $('#expFilter').addEventListener('change', filterPlayers);
+    $('#positionFilter').addEventListener('change', filterPlayers);
+
+    $('#exportCsvBtn').addEventListener('click', exportToCSV);
+    $('#printBtn').addEventListener('click', printTable);
+    $('#rankingsBtn').addEventListener('click', generateDraftRankings);
+    $('#saveBtn').addEventListener('click', saveToLocalStorage);
+    $('#loadBtn').addEventListener('click', loadFromLocalStorage);
+    $('#clearBtn').addEventListener('click', clearAllData);
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(reg => console.log('Service worker registered', reg.scope))
+          .catch(err => console.error('Service worker registration failed', err));
+      });
+    }
+  </script>
+
+</body>
+</html>
