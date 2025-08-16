@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="9U Draft Board">
+<title>9U Draft Board – Offline iPhone App</title>
+<style>
+  :root {
+    --bg: #0f172a;          /* slate-900 */
+    --panel: #111827;       /* gray-900 */
+    --muted: #334155;       /* slate-700 */
+    --text: #e5e7eb;        /* gray-200 */
+    --accent: #22c55e;      /* green-500 */
+    --accent-2: #38bdf8;    /* sky-400 */
+    --warn: #f59e0b;        /* amber-500 */
+    --danger: #ef4444;      /* red-500 */
+    --input: #1f2937;       /* gray-800 */
+    --border: #374151;      /* gray-700 */
+    --chip: #0b5;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji}
+  h1,h2,h3{margin:0.5rem 0}
+  a{color:var(--accent-2)}
+  .wrap{max-width:1100px;margin:0 auto;padding:env(safe-area-inset-top) 12px calc(76px + env(safe-area-inset-bottom));}
+  header{position:sticky;top:0;background:linear-gradient(180deg, rgba(15,23,42,0.95), rgba(15,23,42,0.75));backdrop-filter: blur(10px);z-index:4;padding:8px 12px;border-bottom:1px solid var(--border)}
+  header .title{display:flex;align-items:center;gap:10px}
+  header .title .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  header .title h1{font-size:18px;letter-spacing:.3px}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .tab-btn{padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--panel);color:var(--text);cursor:pointer}
+  .tab-btn.active{outline:2px solid var(--accent-2);}
+  section{display:none;margin-top:14px}
+  section.active{display:block}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:12px;margin:10px 0}
+  label{display:block;font-size:12px;color:#cbd5e1;margin-bottom:4px}
+  input[type=text],input[type=number],select,textarea{
+    width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--input);color:var(--text);
+  }
+  textarea{min-height:70px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row-3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .row-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .row-6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:#0b162b;color:var(--text);cursor:pointer}
+  .btn.primary{background:var(--accent);color:#032; border-color:transparent;font-weight:600}
+  .btn.warn{background:var(--warn);color:#220}
+  .btn.ghost{background:transparent}
+  .btn.danger{background:var(--danger);color:#fff;border-color:transparent}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:#113d2d;padding:4px 8px;border-radius:999px;border:1px solid #1d4ed8}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .stack{display:flex;gap:8px;flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid var(--border);padding:8px 6px;text-align:left;font-size:13px}
+  th{position:sticky;top:0;background:var(--panel);z-index:3}
+  tr:hover{background:#0b1324}
+  .number{width:100px;text-align:right}
+  .right{text-align:right}
+  .small{font-size:12px;color:#cbd5e1}
+  .tag{padding:2px 8px;border:1px solid var(--border);border-radius:999px;font-size:12px;background:#12263f}
+  .kpi{display:flex;gap:18px;flex-wrap:wrap}
+  .kpi .item{background:#0a1b2f;border:1px solid var(--border);padding:10px 12px;border-radius:12px;min-width:130px}
+  .kpi .item h3{font-size:12px;color:#9ca3af;margin-bottom:6px}
+  .kpi .item .val{font-size:20px;font-weight:700}
+  .footer-bar{position:fixed;left:0;right:0;bottom:0;padding:6px 10px;background:linear-gradient(180deg, rgba(15,23,42,0), rgba(15,23,42,0.95) 30%, rgba(15,23,42,1) 100%);backdrop-filter: blur(8px);z-index:5}
+  .footer-bar .bar{max-width:1100px;margin:0 auto;display:flex;gap:8px;justify-content:space-between}
+  .footer-bar .bar .left,.footer-bar .bar .right{display:flex;gap:8px;flex-wrap:wrap}
+  .range-row{display:grid;grid-template-columns:1fr 100px;gap:10px;align-items:center}
+  input[type=range]{width:100%}
+  .score-badge{font-weight:700;padding:4px 8px;border-radius:8px;background:#0b1b2b}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+  details{border:1px dashed var(--border);border-radius:10px;padding:8px 10px}
+  details[open]{background:#0b1320}
+  .hr{height:1px;background:var(--border);margin:10px 0}
+  .danger-zone{border:1px dashed var(--danger);padding:10px;border-radius:12px;background:rgba(239,68,68,.07)}
+  .ok{color:#86efac}
+  .warn-txt{color:#fbbf24}
+  .bad{color:#fca5a5}
+  .btn-sm{padding:6px 10px;font-size:12px}
+  .grid-auto{display:grid;grid-template-columns:repeat(auto-fit, minmax(160px,1fr));gap:10px}
+  .pill{padding:2px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px;background:#13243f}
+  .muted{color:#94a3b8}
+  .flex{display:flex;gap:10px;align-items:center}
+  .hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="title">
+    <div class="dot"></div>
+    <h1>9U Draft Board · Offline</h1>
+    <span class="pill">Local only</span>
+    <span class="pill">iPhone-ready</span>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab-btn active" data-tab="players">Players</button>
+    <button class="tab-btn" data-tab="score">Score Player</button>
+    <button class="tab-btn" data-tab="batch">Overall</button>
+    <button class="tab-btn" data-tab="rankings">Rankings</button>
+    <button class="tab-btn" data-tab="draft">Draft Board</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+    <button class="tab-btn" data-tab="help">Help</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- PLAYERS -->
+  <section id="players" class="active" role="tabpanel">
+    <div class="card">
+      <h2>Add / Edit Player</h2>
+      <div class="row">
+        <div>
+          <label for="playerId">Player ID (unique)</label>
+          <input id="playerId" type="text" placeholder="e.g., 9U-027" autocomplete="off">
+        </div>
+        <div>
+          <label for="firstName">First name</label>
+          <input id="firstName" type="text" placeholder="First">
+        </div>
+        <div>
+          <label for="lastName">Last name</label>
+          <input id="lastName" type="text" placeholder="Last">
+        </div>
+        <div>
+          <label for="age">Age</label>
+          <input id="age" type="number" min="7" max="12" step="1" value="9">
+        </div>
+        <div>
+          <label for="bats">Bats</label>
+          <select id="bats">
+            <option value="">—</option>
+            <option value="R">R</option>
+            <option value="L">L</option>
+            <option value="S">S</option>
+          </select>
+        </div>
+        <div>
+          <label for="throws">Throws</label>
+          <select id="throws">
+            <option value="">—</option>
+            <option value="R">R</option>
+            <option value="L">L</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="flex">
+          <input id="wantsPitch" type="checkbox">
+          <label for="wantsPitch">Candidate: Pitcher</label>
+        </div>
+        <div class="flex">
+          <input id="wantsCatch" type="checkbox">
+          <label for="wantsCatch">Candidate: Catcher</label>
+        </div>
+      </div>
+      <label for="notes">Notes</label>
+      <textarea id="notes" placeholder="Allergies, school, travel ball, coach notes…"></textarea>
+      <div class="stack">
+        <button id="btnAddPlayer" class="btn primary">Save Player</button>
+        <button id="btnClearPlayer" class="btn ghost">Clear Form</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2>Players (0)</h2>
+        </div>
+        <div class="right">
+          <div class="stack" style="justify-content:flex-end">
+            <label for="playerSearch" class="small">Search</label>
+            <input id="playerSearch" type="text" placeholder="Search by ID or name">
+            <button id="btnExportJSON" class="btn btn-sm">Export JSON</button>
+            <button id="btnExportCSV" class="btn btn-sm">Export CSV (All)</button>
+            <label class="btn btn-sm">
+              <input id="importFile" type="file" accept=".json" class="hidden">
+              Import JSON
+            </label>
+          </div>
+        </div>
+      </div>
+      <div style="overflow:auto;max-height:52vh">
+        <table id="playersTable" aria-label="Players table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>B/T</th>
+              <th>Tags</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCORE PLAYER -->
+  <section id="score" role="tabpanel">
+    <div class="card">
+      <h2>Score Player</h2>
+      <div class="row">
+        <div>
+          <label for="selectById">Select by Player ID</label>
+          <select id="selectById"></select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div class="kpi">
+            <div class="item">
+              <h3>Overall</h3>
+              <div class="val" id="kpiOverall">—</div>
+            </div>
+            <div class="item">
+              <h3>Pitcher</h3>
+              <div class="val" id="kpiPitcher">—</div>
+            </div>
+            <div class="item">
+              <h3>Catcher</h3>
+              <div class="val" id="kpiCatcher">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <details>
+        <summary><strong>Quick Grade (aligns to your tryout stations)</strong></summary>
+        <div class="row-3" style="margin-top:10px">
+          <div>
+            <label>Arm Strength (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ov_arm" aria-label="Arm Strength">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_arm_num">
+            </div>
+            <div class="small">SS → 1B throws: carry & life</div>
+          </div>
+          <div>
+            <label>Fielding (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ov_field" aria-label="Fielding grounders">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_field_num">
+            </div>
+            <div class="small">SS grounders: footwork, glove, transfer</div>
+          </div>
+          <div>
+            <label>Receiving / Hands (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ov_receiving" aria-label="Receiving">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_receiving_num">
+            </div>
+            <div class="small">Ability to catch throws cleanly</div>
+          </div>
+
+          <div>
+            <label>Fly Ball (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ov_flyball" aria-label="Fly ball">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_flyball_num">
+            </div>
+            <div class="small">Reads, routes, crow hop</div>
+          </div>
+          <div>
+            <label>Batting (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ov_bat" aria-label="Batting">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_bat_num">
+            </div>
+            <div class="small">Contact quality, path, decisions</div>
+          </div>
+          <div>
+            <label>Speed – Home→1st (sec)</label>
+            <div class="range-row">
+              <input type="number" class="number" step="0.1" min="4.0" max="10.0" id="ov_h1_time">
+              <span class="score-badge">Speed score: <span id="ov_speed_score">—</span></span>
+            </div>
+            <div class="small">Or leave time blank and set a manual score below</div>
+            <div class="range-row" style="margin-top:6px">
+              <input type="range" min="1" max="5" step="0.5" id="ov_speed" aria-label="Speed grade (manual)">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ov_speed_num">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="hr"></div>
+
+      <details open>
+        <summary><strong>Pitcher Evaluation</strong> <span class="small muted">(toggle off if not a pitcher)</span></summary>
+        <div class="grid-auto" style="margin-top:10px">
+          <div class="flex">
+            <input id="pi_is" type="checkbox" checked>
+            <label for="pi_is">Score as Pitcher</label>
+          </div>
+          <div>
+            <label>Strikes</label>
+            <input id="pi_strikes" type="number" min="0" step="1" value="0">
+          </div>
+          <div>
+            <label>Total Pitches</label>
+            <input id="pi_total" type="number" min="0" step="1" value="0">
+          </div>
+          <div>
+            <label>Strike % (auto)</label>
+            <input id="pi_spct" type="text" class="number" readonly>
+          </div>
+          <div>
+            <label>Command (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="pi_command">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="pi_command_num">
+            </div>
+          </div>
+          <div>
+            <label>Mechanics / Repeatability (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="pi_mech">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="pi_mech_num">
+            </div>
+          </div>
+          <div>
+            <label>Velocity (mph, optional)</label>
+            <input id="pi_mph" type="number" min="0" step="1">
+            <div class="small">Velocity score: <span id="pi_mph_score">—</span></div>
+          </div>
+          <div>
+            <label>Composure (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="pi_comp">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="pi_comp_num">
+            </div>
+          </div>
+          <div>
+            <label>PFP / Fielding Position (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="pi_pfp">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="pi_pfp_num">
+            </div>
+          </div>
+          <div class="flex">
+            <input id="pi_secondary" type="checkbox">
+            <label for="pi_secondary">Shows a secondary pitch (optional)</label>
+          </div>
+        </div>
+      </details>
+
+      <div class="hr"></div>
+
+      <details open>
+        <summary><strong>Catcher Evaluation</strong> <span class="small muted">(toggle off if not a catcher)</span></summary>
+        <div class="grid-auto" style="margin-top:10px">
+          <div class="flex">
+            <input id="ca_is" type="checkbox" checked>
+            <label for="ca_is">Score as Catcher</label>
+          </div>
+          <div>
+            <label>Receiving / Soft Hands (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_recv">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_recv_num">
+            </div>
+          </div>
+          <div>
+            <label>Blocking (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_block">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_block_num">
+            </div>
+          </div>
+          <div>
+            <label>Exchange / Footwork (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_xfer">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_xfer_num">
+            </div>
+          </div>
+          <div>
+            <label>Throw Accuracy (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_acc">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_acc_num">
+            </div>
+          </div>
+          <div>
+            <label>Pop Time (sec, optional)</label>
+            <input id="ca_pop" type="number" min="1" step="0.1">
+            <div class="small">Pop score: <span id="ca_pop_score">—</span></div>
+          </div>
+          <div>
+            <label>Leadership / Voice (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_lead">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_lead_num">
+            </div>
+          </div>
+          <div>
+            <label>Stamina / Toughness (1–5)</label>
+            <div class="range-row">
+              <input type="range" min="1" max="5" step="0.5" id="ca_stam">
+              <input type="number" class="number" min="1" max="5" step="0.5" id="ca_stam_num">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <div class="hr"></div>
+      <label for="score_notes">Scouting Notes</label>
+      <textarea id="score_notes" placeholder="Observations, comps, confidence, context…"></textarea>
+      <div class="stack">
+        <button id="btnSaveScores" class="btn primary">Save Scores</button>
+        <button id="btnClearScores" class="btn ghost">Clear Scores</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- OVERALL (formerly Batch) -->
+  <section id="batch" role="tabpanel">
+    <div class="card">
+      <h2>Overall – Main Attributes</h2>
+      <div class="small muted">Tip: Enter numbers (1–5). Changes save as you type.</div>
+      <div style="overflow:auto;max-height:58vh;margin-top:10px">
+        <table id="batchTable" aria-label="Overall grading table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Arm</th>
+              <th>Field</th>
+              <th>Hands</th>
+              <th>Footwork</th>
+              <th>IQ</th>
+              <th>Fly</th>
+              <th>Bat</th>
+              <th>H→1st (s)</th>
+              <th>Speed</th>
+              <th>Overall</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- RANKINGS -->
+  <section id="rankings" role="tabpanel">
+    <div class="card">
+      <div class="row">
+        <div><h2>Overall Rankings</h2></div>
+        <div class="right"><button id="btnRefreshRanks" class="btn btn-sm">Recompute</button></div>
+      </div>
+      <div style="overflow:auto;max-height:48vh">
+        <table id="overallRankTable">
+          <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">Arm</th><th class="small">Field</th><th class="small">Hands</th><th class="small">Foot</th><th class="small">IQ</th><th class="small">Fly</th><th class="small">Bat</th><th class="small">Spd</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card">
+        <div class="row">
+          <div><h2>Pitchers</h2></div>
+          <div class="right"><button id="btnExportPitchCSV" class="btn btn-sm">Export Pitchers CSV</button></div>
+        </div>
+        <div style="overflow:auto;max-height:48vh">
+          <table id="pitchRankTable">
+            <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">K%</th><th class="small">Cmd</th><th class="small">Mech</th><th class="small">Velo</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row">
+          <div><h2>Catchers</h2></div>
+          <div class="right"><button id="btnExportCatchCSV" class="btn btn-sm">Export Catchers CSV</button></div>
+        </div>
+        <div style="overflow:auto;max-height:48vh">
+          <table id="catchRankTable">
+            <thead><tr><th>#</th><th>ID</th><th>Name</th><th>Score</th><th class="small">Recv</th><th class="small">Blk</th><th class="small">Throw</th><th class="small">Pop</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DRAFT BOARD -->
+  <section id="draft" role="tabpanel">
+    <div class="card">
+      <div class="row">
+        <div>
+          <h2>My 12</h2>
+          <div class="small muted">Tap “Add to Roster” from rankings or search by ID to add.</div>
+        </div>
+        <div class="right">
+          <button id="btnClearDraft" class="btn danger btn-sm">Clear Draft</button>
+        </div>
+      </div>
+      <div id="draftList" class="grid-auto"></div>
+    </div>
+
+    <div class="card">
+      <h2>Add by ID</h2>
+      <div class="row">
+        <div>
+          <label for="draftAddId">Player ID</label>
+          <input id="draftAddId" type="text" placeholder="e.g., 9U-027">
+        </div>
+        <div style="align-self:end">
+          <button id="btnDraftAdd" class="btn primary">Add to Roster</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settings" role="tabpanel">
+    <div class="card">
+      <h2>Weights – Overall</h2>
+      <div class="row-3">
+        <div><label>Arm</label><input id="w_ov_arm" type="number" min="0" max="100" step="1"></div>
+        <div><label>Field</label><input id="w_ov_field" type="number" min="0" max="100" step="1"></div>
+        <div><label>Hands</label><input id="w_ov_receiving" type="number" min="0" max="100" step="1"></div>
+        <div><label>Footwork</label><input id="w_ov_footwork" type="number" min="0" max="100" step="1"></div>
+        <div><label>IQ</label><input id="w_ov_iq" type="number" min="0" max="100" step="1"></div>
+        <div><label>Fly</label><input id="w_ov_flyball" type="number" min="0" max="100" step="1"></div>
+        <div><label>Bat</label><input id="w_ov_bat" type="number" min="0" max="100" step="1"></div>
+        <div><label>Speed</label><input id="w_ov_speed" type="number" min="0" max="100" step="1"></div>
+      </div>
+      <div class="stack" style="margin-top:8px">
+        <button id="btnNormOverall" class="btn btn-sm">Normalize to 100%</button>
+        <span class="small muted">Current sum: <span id="sumOverall">—</span>%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Weights – Pitcher</h2>
+      <div class="row-3">
+        <div><label>Strike %</label><input id="w_pi_spct" type="number" min="0" max="100" step="1"></div>
+        <div><label>Command</label><input id="w_pi_cmd" type="number" min="0" max="100" step="1"></div>
+        <div><label>Mechanics</label><input id="w_pi_mech" type="number" min="0" max="100" step="1"></div>
+        <div><label>Velocity</label><input id="w_pi_velo" type="number" min="0" max="100" step="1"></div>
+        <div><label>Composure</label><input id="w_pi_comp" type="number" min="0" max="100" step="1"></div>
+        <div><label>PFP</label><input id="w_pi_pfp" type="number" min="0" max="100" step="1"></div>
+      </div>
+      <div class="stack" style="margin-top:8px">
+        <button id="btnNormPitch" class="btn btn-sm">Normalize to 100%</button>
+        <span class="small muted">Current sum: <span id="sumPitch">—</span>%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Weights – Catcher</h2>
+      <div class="row-3">
+        <div><label>Receiving</label><input id="w_ca_recv" type="number" min="0" max="100" step="1"></div>
+        <div><label>Blocking</label><input id="w_ca_block" type="number" min="0" max="100" step="1"></div>
+        <div><label>Exchange</label><input id="w_ca_xfer" type="number" min="0" max="100" step="1"></div>
+        <div><label>Throw Acc</label><input id="w_ca_acc" type="number" min="0" max="100" step="1"></div>
+        <div><label>Pop Time</label><input id="w_ca_pop" type="number" min="0" max="100" step="1"></div>
+        <div><label>Leadership</label><input id="w_ca_lead" type="number" min="0" max="100" step="1"></div>
+        <div><label>Stamina</label><input id="w_ca_stam" type="number" min="0" max="100" step="1"></div>
+      </div>
+      <div class="stack" style="margin-top:8px">
+        <button id="btnNormCatch" class="btn btn-sm">Normalize to 100%</button>
+        <span class="small muted">Current sum: <span id="sumCatch">—</span>%</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Thresholds</h2>
+      <div class="row-3">
+        <div class="card">
+          <h3>Speed – Home→1st (sec)</h3>
+          <div class="small muted">>= worst is 1 point • <= best is 5 points</div>
+          <div class="row-3" style="margin-top:8px">
+            <div><label>5 points ≤</label><input id="t_speed_5" type="number" step="0.1"></div>
+            <div><label>4 points ≤</label><input id="t_speed_4" type="number" step="0.1"></div>
+            <div><label>3 points ≤</label><input id="t_speed_3" type="number" step="0.1"></div>
+            <div><label>2 points ≤</label><input id="t_speed_2" type="number" step="0.1"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Pop Time – C to 2B (sec)</h3>
+          <div class="small muted"><= best is 5 points</div>
+          <div class="row-3" style="margin-top:8px">
+            <div><label>5 points ≥</label><input id="t_pop_5" type="number" step="0.1"></div>
+            <div><label>4 points ≥</label><input id="t_pop_4" type="number" step="0.1"></div>
+            <div><label>3 points ≥</label><input id="t_pop_3" type="number" step="0.1"></div>
+            <div><label>2 points ≥</label><input id="t_pop_2" type="number" step="0.1"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Pitch Velo – mph</h3>
+          <div class="small muted">>= best is 5 points</div>
+          <div class="row-3" style="margin-top:8px">
+            <div><label>5 points ≥</label><input id="t_velo_5" type="number" step="1"></div>
+            <div><label>4 points ≥</label><input id="t_velo_4" type="number" step="1"></div>
+            <div><label>3 points ≥</label><input id="t_velo_3" type="number" step="1"></div>
+            <div><label>2 points ≥</label><input id="t_velo_2" type="number" step="1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card danger-zone">
+      <h2>Data Management</h2>
+      <div class="stack">
+        <button id="btnResetAll" class="btn danger">Reset Everything</button>
+        <span class="small bad">This erases all players, scores, settings, and draft selections from this device.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- HELP -->
+  <section id="help" role="tabpanel">
+    <div class="card">
+      <h2>How to Use This at Tryouts</h2>
+      <ol>
+        <li><strong>Add Players</strong> with the exact ID stickers you'll use on the field.</li>
+        <li><strong>Score Player</strong> by selecting ID and entering the six quick grades that match your stations: Arm, Fielding, Hands, Fly Ball, Batting, and Speed (use Home→1st time if you have it).</li>
+        <li><strong>Pitchers & Catchers</strong> are graded separately. Enter strikes/total for strike %, pop time (if measured), and use the sliders for the rest.</li>
+        <li><strong>Overall</strong> lets you enter or adjust grades for many kids at once (now includes Footwork & IQ).</li>
+        <li><strong>Rankings</strong> are computed automatically based on your weights. Export CSV if you want a backup.</li>
+        <li><strong>Draft Board</strong> gives you 12 roster slots. Add by ID or from rankings.</li>
+      </ol>
+      <p class="small muted">All data stays on your phone in <span class="mono">localStorage</span> and works offline. Add to Home Screen in Safari for an app-like experience.</p>
+    </div>
+    <div class="card">
+      <h2>Default Weights & Philosophy</h2>
+      <p>Defaults are tuned for 9U where run prevention, ball handling, and throwing consistency win more games than raw power.</p>
+      <ul>
+        <li><strong>Overall</strong>: Arm 20%, Fielding 20%, Hands 10%, Footwork 0%, IQ 0%, Fly 10%, Bat 25%, Speed 15%.</li>
+        <li><strong>Pitcher</strong>: Strike % 30%, Command 25%, Mechanics 20%, Velocity 15%, Composure 5%, PFP 5%.</li>
+        <li><strong>Catcher</strong>: Receiving 25%, Blocking 20%, Exchange 15%, Throw Accuracy 15%, Pop Time 10%, Leadership 10%, Stamina 5%.</li>
+      </ul>
+      <p class="small muted">Tune these in <em>Settings</em> to fit your league and philosophy.</p>
+    </div>
+  </section>
+
+</div>
+
+<div class="footer-bar">
+  <div class="bar">
+    <div class="left">
+      <span class="pill">Overall: <span id="footOverall">—</span></span>
+      <span class="pill">Pitchers: <span id="footPitch">—</span></span>
+      <span class="pill">Catchers: <span id="footCatch">—</span></span>
+    </div>
+    <div class="right">
+      <button class="btn btn-sm" id="btnPrint">Print</button>
+      <button class="btn btn-sm" id="btnBackup">Quick Backup</button>
+      <input id="backupFile" type="file" accept=".json" class="hidden">
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========= Data Store ========= */
+const LS_KEYS = {
+  players: 'nineu_players_v1',
+  scores:  'nineu_scores_v1',
+  settings:'nineu_settings_v1',
+  draft:   'nineu_draft_v1'
+};
+
+const Default = {
+  settings: {
+    overallWeights: { arm:20, fielding:20, receiving:10, footwork:0, iq:0, flyball:10, bat:25, speed:15 },
+    speedThresholds: { s5:5.7, s4:6.1, s3:6.6, s2:7.1 },
+    popThresholds:   { s5:2.7, s4:2.9, s3:3.2, s2:3.5 },
+    veloThresholds:  { s5:55,  s4:52,  s3:48,  s2:44  }
+  }
+};
+
+let players = [];
+let scores  = {};     // id -> { overall:{...}, pitcher:{...}, catcher:{} }
+let settings = {};
+let drafted = [];
+
+function loadAll(){
+  players = JSON.parse(localStorage.getItem(LS_KEYS.players) || '[]');
+  scores  = JSON.parse(localStorage.getItem(LS_KEYS.scores)  || '{}');
+  settings= JSON.parse(localStorage.getItem(LS_KEYS.settings)|| JSON.stringify(Default.settings));
+  drafted = JSON.parse(localStorage.getItem(LS_KEYS.draft)   || '[]');
+}
+
+function savePlayers(){ localStorage.setItem(LS_KEYS.players, JSON.stringify(players)); }
+function saveScores(){  localStorage.setItem(LS_KEYS.scores,  JSON.stringify(scores));  }
+function saveSettings(){localStorage.setItem(LS_KEYS.settings,JSON.stringify(settings));}
+function saveDraft(){   localStorage.setItem(LS_KEYS.draft,   JSON.stringify(drafted)); }
+
+/* ========= Utilities ========= */
+function byId(id){ return document.getElementById(id); }
+function percent(n){ return (Math.round(n * 10) / 10).toFixed(1); }
+function clamp(val, min, max){ return Math.max(min, Math.min(max, val)); }
+
+function computeSpeedScore(time){
+  if(!time && time !== 0) return null;
+  const t = Number(time);
+  if(isNaN(t) || t<=0) return null;
+  const {s5,s4,s3,s2} = settings.speedThresholds;
+  if(t <= s5) return 5;
+  if(t <= s4) return 4;
+  if(t <= s3) return 3;
+  if(t <= s2) return 2;
+  return 1;
+}
+
+function computePopScore(time){
+  if(!time && time !== 0) return null;
+  const t = Number(time);
+  if(isNaN(t) || t<=0) return null;
+  const {s5,s4,s3,s2} = settings.popThresholds;
+  if(t <= s5) return 5;
+  if(t <= s4) return 4;
+  if(t <= s3) return 3;
+  if(t <= s2) return 2;
+  return 1;
+}
+
+function computeVeloScore(mph){
+  if(!mph && mph !== 0) return null;
+  const v = Number(mph);
+  if(isNaN(v) || v<=0) return null;
+  const {s5,s4,s3,s2} = settings.veloThresholds;
+  if(v >= s5) return 5;
+  if(v >= s4) return 4;
+  if(v >= s3) return 3;
+  if(v >= s2) return 2;
+  return 1;
+}
+
+function weightedAverage(pairs){
+  // pairs: [{val, wt}] ignoring null vals; scale to available weight
+  let sum = 0, wsum = 0;
+  for(const p of pairs){
+    if(p.val===null || p.val===undefined || isNaN(p.val)) continue;
+    sum += Number(p.val) * Number(p.wt);
+    wsum += Number(p.wt);
+  }
+  if(wsum <= 0) return null;
+  return sum / wsum;
+}
+
+function findPlayer(id){
+  return players.find(p => (p.id||'').toLowerCase() === (id||'').toLowerCase());
+}
+
+function ensureUniqueId(id){
+  return !players.some(p => p.id.toLowerCase() === id.toLowerCase());
+}
+
+/* ========= UI Helpers ========= */
+function switchTab(tab){
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  byId(tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===tab));
+  if(tab==='rankings') renderRankings();
+  if(tab==='batch') renderBatch();
+  if(tab==='draft') renderDraft();
+}
+
+function renderPlayers(){
+  const tb = byId('playersTable').querySelector('tbody');
+  tb.innerHTML = '';
+  const query = (byId('playerSearch').value||'').trim().toLowerCase();
+  const rows = players
+    .filter(p => !query || p.id.toLowerCase().includes(query) || (p.first||'').toLowerCase().includes(query) || (p.last||'').toLowerCase().includes(query))
+    .map(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td class="mono">${p.id}</td>
+        <td>${(p.first||'') + ' ' + (p.last||'')}</td>
+        <td>${(p.bats||'')}/${(p.throws||'')}</td>
+        <td>${p.wPitch?'<span class="tag">P</span>':''} ${p.wCatch?'<span class="tag">C</span>':''}</td>
+        <td>
+          <button class="btn btn-sm" data-act="edit" data-id="${p.id}">Edit</button>
+          <button class="btn btn-sm danger" data-act="del" data-id="${p.id}">Delete</button>
+        </td>`;
+      return tr;
+    });
+  rows.forEach(r => tb.appendChild(r));
+  document.querySelector('#players h2').textContent = `Players (${players.length})`;
+  renderIdSelect();
+  renderFootCounts();
+}
+
+function renderIdSelect(){
+  const sel = byId('selectById');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Select Player ID —</option>' + players.map(p => `<option value="${p.id}">${p.id} — ${p.first||''} ${p.last||''}</option>`).join('');
+  if(players.some(p => p.id===current)) sel.value = current;
+}
+
+function renderFootCounts(){
+  // counts of saved scores
+  const ids = Object.keys(scores);
+  let o=0, pi=0, ca=0;
+  ids.forEach(id => {
+    const s = scores[id]||{};
+    if(s.overall && s.overall.total!=null) o++;
+    if(s.pitcher && s.pitcher.total!=null) pi++;
+    if(s.catcher && s.catcher.total!=null) ca++;
+  });
+  byId('footOverall').textContent = `${o}/${players.length}`;
+  byId('footPitch').textContent   = `${pi}/${players.length}`;
+  byId('footCatch').textContent   = `${ca}/${players.length}`;
+}
+
+/* ========= Players Form ========= */
+function clearPlayerForm(){
+  byId('playerId').value='';
+  byId('firstName').value='';
+  byId('lastName').value='';
+  byId('age').value='9';
+  byId('bats').value='';
+  byId('throws').value='';
+  byId('wantsPitch').checked=false;
+  byId('wantsCatch').checked=false;
+  byId('notes').value='';
+}
+
+function populatePlayerForm(p){
+  byId('playerId').value = p.id || '';
+  byId('firstName').value= p.first || '';
+  byId('lastName').value = p.last || '';
+  byId('age').value      = p.age || 9;
+  byId('bats').value     = p.bats || '';
+  byId('throws').value   = p.throws || '';
+  byId('wantsPitch').checked = !!p.wPitch;
+  byId('wantsCatch').checked = !!p.wCatch;
+  byId('notes').value    = p.notes || '';
+}
+
+function addOrUpdatePlayer(){
+  const id = (byId('playerId').value||'').trim();
+  if(!id){ alert('Player ID is required.'); return; }
+  const existing = players.findIndex(p => p.id.toLowerCase()===id.toLowerCase());
+  const p = {
+    id,
+    first: (byId('firstName').value||'').trim(),
+    last:  (byId('lastName').value||'').trim(),
+    age:   Number(byId('age').value)||9,
+    bats:  byId('bats').value,
+    throws:byId('throws').value,
+    wPitch: byId('wantsPitch').checked,
+    wCatch: byId('wantsCatch').checked,
+    notes:  byId('notes').value||''
+  };
+  if(existing>=0){
+    players[existing] = p;
+  }else{
+    if(!ensureUniqueId(id)){ alert('That Player ID already exists. Choose a unique ID.'); return; }
+    players.push(p);
+  }
+  savePlayers();
+  renderPlayers();
+  renderIdSelect();
+  alert('Saved.');
+}
+
+function deletePlayer(id){
+  if(!confirm('Delete player '+id+' and all their scores?')) return;
+  players = players.filter(p => p.id!==id);
+  delete scores[id];
+  drafted = drafted.filter(x => x!==id);
+  savePlayers(); saveScores(); saveDraft();
+  renderPlayers();
+  renderIdSelect();
+}
+
+/* ========= Score Form ========= */
+function linkRangeAndNumber(rangeId, numId){
+  const r = byId(rangeId), n = byId(numId);
+  const sync = (src, dest) => ()=>{ dest.value = src.value; updateKpis();};
+  r.addEventListener('input', sync(r,n));
+  n.addEventListener('input', ()=>{ r.value = n.value; updateKpis(); });
+}
+
+function initLinkedInputs(){
+  linkRangeAndNumber('ov_arm','ov_arm_num');
+  linkRangeAndNumber('ov_field','ov_field_num');
+  linkRangeAndNumber('ov_receiving','ov_receiving_num');
+  linkRangeAndNumber('ov_flyball','ov_flyball_num');
+  linkRangeAndNumber('ov_bat','ov_bat_num');
+  linkRangeAndNumber('ov_speed','ov_speed_num');
+
+  linkRangeAndNumber('pi_command','pi_command_num');
+  linkRangeAndNumber('pi_mech','pi_mech_num');
+  linkRangeAndNumber('pi_comp','pi_comp_num');
+  linkRangeAndNumber('pi_pfp','pi_pfp_num');
+
+  linkRangeAndNumber('ca_recv','ca_recv_num');
+  linkRangeAndNumber('ca_block','ca_block_num');
+  linkRangeAndNumber('ca_xfer','ca_xfer_num');
+  linkRangeAndNumber('ca_acc','ca_acc_num');
+  linkRangeAndNumber('ca_lead','ca_lead_num');
+  linkRangeAndNumber('ca_stam','ca_stam_num');
+}
+
+function loadScoreForm(id){
+  const s = scores[id] || {};
+  const o = s.overall || {};
+  const p = s.pitcher || {};
+  const c = s.catcher || {};
+
+  byId('ov_arm').value = byId('ov_arm_num').value = o.arm ?? '';
+  byId('ov_field').value = byId('ov_field_num').value = o.fielding ?? '';
+  byId('ov_receiving').value = byId('ov_receiving_num').value = o.receiving ?? '';
+  byId('ov_flyball').value = byId('ov_flyball_num').value = o.flyball ?? '';
+  byId('ov_bat').value = byId('ov_bat_num').value = o.bat ?? '';
+  byId('ov_speed').value = byId('ov_speed_num').value = o.speed ?? '';
+  byId('ov_h1_time').value = o.h1time ?? '';
+  byId('ov_speed_score').textContent = o.speed ?? '—';
+
+  byId('pi_is').checked = p.is ?? (findPlayer(id)?.wPitch || false);
+  byId('pi_strikes').value = p.strikes ?? 0;
+  byId('pi_total').value = p.total ?? 0;
+  byId('pi_spct').value = p.spct!=null ? (p.spct.toFixed(0)+'%') : '';
+  byId('pi_command').value = byId('pi_command_num').value = p.command ?? '';
+  byId('pi_mech').value    = byId('pi_mech_num').value    = p.mech ?? '';
+  byId('pi_mph').value = p.mph ?? '';
+  byId('pi_mph_score').textContent = p.mphScore ?? '—';
+  byId('pi_comp').value = byId('pi_comp_num').value = p.comp ?? '';
+  byId('pi_pfp').value  = byId('pi_pfp_num').value  = p.pfp ?? '';
+  byId('pi_secondary').checked = p.secondary || false;
+
+  byId('ca_is').checked = c.is ?? (findPlayer(id)?.wCatch || false);
+  byId('ca_recv').value = byId('ca_recv_num').value = c.recv ?? '';
+  byId('ca_block').value= byId('ca_block_num').value= c.block ?? '';
+  byId('ca_xfer').value = byId('ca_xfer_num').value = c.xfer ?? '';
+  byId('ca_acc').value  = byId('ca_acc_num').value  = c.acc ?? '';
+  byId('ca_pop').value  = c.pop ?? '';
+  byId('ca_pop_score').textContent = c.popScore ?? '—';
+  byId('ca_lead').value = byId('ca_lead_num').value = c.lead ?? '';
+  byId('ca_stam').value = byId('ca_stam_num').value = c.stam ?? '';
+
+  byId('score_notes').value = s.notes || '';
+
+  updateKpis();
+}
+
+function gatherScoreForm(){
+  const val = v => {
+    if(v===undefined || v===null) return null;
+    const t = (''+v).trim();
+    if(t==='') return null;
+    return isNaN(Number(t)) ? null : Number(t);
+  };
+  const id = byId('selectById').value;
+  const o = {
+    arm: val(byId('ov_arm').value),
+    fielding: val(byId('ov_field').value),
+    receiving: val(byId('ov_receiving').value),
+    flyball: val(byId('ov_flyball').value),
+    bat: val(byId('ov_bat').value),
+    speed: val(byId('ov_speed').value),
+    h1time: val(byId('ov_h1_time').value)
+  };
+  const p = {
+    is: byId('pi_is').checked,
+    strikes: val(byId('pi_strikes').value)||0,
+    total:   val(byId('pi_total').value)||0,
+    spct: null,
+    command: val(byId('pi_command').value),
+    mech:    val(byId('pi_mech').value),
+    mph:     val(byId('pi_mph').value),
+    mphScore:null,
+    comp:    val(byId('pi_comp').value),
+    pfp:     val(byId('pi_pfp').value),
+    secondary: byId('pi_secondary').checked
+  };
+  if(p.total>0) p.spct = clamp((p.strikes/p.total)*100, 0, 100); else p.spct = null;
+  p.mphScore = computeVeloScore(p.mph);
+
+  const c = {
+    is: byId('ca_is').checked,
+    recv: val(byId('ca_recv').value),
+    block:val(byId('ca_block').value),
+    xfer: val(byId('ca_xfer').value),
+    acc:  val(byId('ca_acc').value),
+    pop:  val(byId('ca_pop').value),
+    popScore: null,
+    lead: val(byId('ca_lead').value),
+    stam: val(byId('ca_stam').value)
+  };
+  c.popScore = computePopScore(c.pop);
+
+  const sp = computeSpeedScore(o.h1time);
+  if(sp!=null){
+    o.speed = sp;
+  }
+  return {id, overall:o, pitcher:p, catcher:c, notes: byId('score_notes').value||''};
+}
+
+function computeOverallTotal(o){
+  const w = settings.overallWeights;
+  const total = weightedAverage([
+    {val:o.arm, wt:w.arm},
+    {val:o.fielding, wt:w.fielding},
+    {val:o.receiving, wt:w.receiving},
+    {val:o.footwork, wt:w.footwork},
+    {val:o.iq, wt:w.iq},
+    {val:o.flyball, wt:w.flyball},
+    {val:o.bat, wt:w.bat},
+    {val:o.speed, wt:w.speed}
+  ]);
+  return total!=null ? Number(total.toFixed(2)) : null;
+}
+
+function computePitcherTotal(p){
+  if(!p.is) return null;
+  const w = {
+    spct: Number(byId('w_pi_spct').value||0),
+    cmd:  Number(byId('w_pi_cmd').value||0),
+    mech: Number(byId('w_pi_mech').value||0),
+    velo: Number(byId('w_pi_velo').value||0),
+    comp: Number(byId('w_pi_comp').value||0),
+    pfp:  Number(byId('w_pi_pfp').value||0)
+  };
+  const spctScore = p.spct!=null ? (p.spct>=70?5: p.spct>=60?4: p.spct>=50?3: p.spct>=40?2:1) : null;
+  const total = weightedAverage([
+    {val: spctScore, wt: w.spct},
+    {val: p.command, wt: w.cmd},
+    {val: p.mech,    wt: w.mech},
+    {val: p.mphScore,wt: w.velo},
+    {val: p.comp,    wt: w.comp},
+    {val: p.pfp,     wt: w.pfp}
+  ]);
+  return total!=null ? Number(total.toFixed(2)) : null;
+}
+
+function computeCatcherTotal(c){
+  if(!c.is) return null;
+  const w = {
+    recv: Number(byId('w_ca_recv').value||0),
+    block:Number(byId('w_ca_block').value||0),
+    xfer: Number(byId('w_ca_xfer').value||0),
+    acc:  Number(byId('w_ca_acc').value||0),
+    pop:  Number(byId('w_ca_pop').value||0),
+    lead: Number(byId('w_ca_lead').value||0),
+    stam: Number(byId('w_ca_stam').value||0)
+  };
+  const total = weightedAverage([
+    {val:c.recv, wt:w.recv},
+    {val:c.block,wt:w.block},
+    {val:c.xfer, wt:w.xfer},
+    {val:c.acc,  wt:w.acc},
+    {val:c.popScore, wt:w.pop},
+    {val:c.lead, wt:w.lead},
+    {val:c.stam, wt:w.stam}
+  ]);
+  return total!=null ? Number(total.toFixed(2)) : null;
+}
+
+function updateKpis(){
+  const data = gatherScoreForm();
+  byId('ov_speed_score').textContent = (data.overall.speed!=null?data.overall.speed:'—');
+  byId('pi_spct').value = (data.pitcher.spct!=null?data.pitcher.spct.toFixed(0)+'%':'');
+  byId('pi_mph_score').textContent = (data.pitcher.mphScore!=null?data.pitcher.mphScore:'—');
+  byId('ca_pop_score').textContent = (data.catcher.popScore!=null?data.catcher.popScore:'—');
+
+  const o = computeOverallTotal(data.overall);
+  const p = computePitcherTotal(data.pitcher);
+  const c = computeCatcherTotal(data.catcher);
+
+  byId('kpiOverall').textContent = (o!=null?o.toFixed(2):'—');
+  byId('kpiPitcher').textContent = (p!=null?p.toFixed(2):'—');
+  byId('kpiCatcher').textContent = (c!=null?c.toFixed(2):'—');
+}
+
+function saveScoresFromForm(){
+  const d = gatherScoreForm();
+  if(!d.id){ alert('Select a Player ID first.'); return; }
+  scores[d.id] = scores[d.id] || {};
+  // Merge overall to preserve footwork & IQ from Overall table
+  scores[d.id].overall = Object.assign({}, (scores[d.id].overall||{}), d.overall);
+  scores[d.id].pitcher = d.pitcher;
+  scores[d.id].catcher = d.catcher;
+  scores[d.id].notes   = d.notes;
+  scores[d.id].overall.total = computeOverallTotal(scores[d.id].overall);
+  scores[d.id].pitcher.total = computePitcherTotal(d.pitcher);
+  scores[d.id].catcher.total = computeCatcherTotal(d.catcher);
+  saveScores();
+  updateKpis();
+  renderFootCounts();
+  alert('Scores saved.');
+}
+
+function clearScoresForm(){
+  ['ov_arm','ov_field','ov_receiving','ov_flyball','ov_bat','ov_speed',
+   'ov_arm_num','ov_field_num','ov_receiving_num','ov_flyball_num','ov_bat_num','ov_speed_num',
+   'ov_h1_time'].forEach(id => byId(id).value='');
+
+  ['pi_is','ca_is'].forEach(id => byId(id).checked=true);
+
+  ['pi_strikes','pi_total','pi_mph','ca_pop'].forEach(id => byId(id).value='');
+  ['pi_command','pi_mech','pi_comp','pi_pfp',
+   'pi_command_num','pi_mech_num','pi_comp_num','pi_pfp_num',
+   'ca_recv','ca_block','ca_xfer','ca_acc','ca_lead','ca_stam',
+   'ca_recv_num','ca_block_num','ca_xfer_num','ca_acc_num','ca_lead_num','ca_stam_num'
+  ].forEach(id => byId(id).value='');
+  byId('score_notes').value='';
+  updateKpis();
+}
+
+/* ========= Overall (Batch) Table ========= */
+function renderBatch(){
+  const tb = byId('batchTable').querySelector('tbody');
+  tb.innerHTML='';
+  players.forEach(p => {
+    const s = scores[p.id]?.overall || {};
+    const total = computeOverallTotal(s);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="mono">${p.id}</td>
+      <td>${p.first||''} ${p.last||''}</td>
+      <td><input data-id="${p.id}" data-k="arm" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.arm??''}"></td>
+      <td><input data-id="${p.id}" data-k="fielding" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.fielding??''}"></td>
+      <td><input data-id="${p.id}" data-k="receiving" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.receiving??''}"></td>
+      <td><input data-id="${p.id}" data-k="footwork" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.footwork??''}"></td>
+      <td><input data-id="${p.id}" data-k="iq" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.iq??''}"></td>
+      <td><input data-id="${p.id}" data-k="flyball" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.flyball??''}"></td>
+      <td><input data-id="${p.id}" data-k="bat" class="number batch" type="number" min="1" max="5" step="0.5" value="${s.bat??''}"></td>
+      <td><input data-id="${p.id}" data-k="h1time" class="number batch" type="number" min="4" max="10" step="0.1" value="${s.h1time??''}"></td>
+      <td class="right">${s.speed??'—'}</td>
+      <td class="right">${total!=null?total.toFixed(2):'—'}</td>
+      <td><button class="btn btn-sm" data-act="jump" data-id="${p.id}">Open</button></td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  // attach listeners
+  tb.querySelectorAll('input.batch').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const id = inp.dataset.id;
+      const k = inp.dataset.k;
+      scores[id] = scores[id] || { overall:{} };
+      scores[id].overall = scores[id].overall || {};
+      const v = inp.value===''? null : Number(inp.value);
+      scores[id].overall[k] = v;
+      if(k==='h1time'){
+        const sp = computeSpeedScore(v);
+        scores[id].overall.speed = (sp!=null?sp:null);
+      }
+      scores[id].overall.total = computeOverallTotal(scores[id].overall);
+      saveScores();
+      renderBatch(); // rerender to update totals
+    });
+  });
+
+  tb.querySelectorAll('button[data-act="jump"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      byId('selectById').value = btn.dataset.id;
+      switchTab('score');
+      loadScoreForm(btn.dataset.id);
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+  });
+}
+
+/* ========= Rankings ========= */
+function renderRankings(){
+  // overall
+  const oData = players.map(p => {
+    const s = scores[p.id]?.overall || {};
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:computeOverallTotal(s), o:s };
+  }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
+
+  const tbO = byId('overallRankTable').querySelector('tbody');
+  tbO.innerHTML='';
+  oData.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td class="mono">${r.id}</td><td>${r.name}</td><td class="right">${r.total.toFixed(2)}</td>
+      <td class="right small">${r.o.arm??''}</td><td class="right small">${r.o.fielding??''}</td>
+      <td class="right small">${r.o.receiving??''}</td><td class="right small">${r.o.footwork??''}</td>
+      <td class="right small">${r.o.iq??''}</td><td class="right small">${r.o.flyball??''}</td>
+      <td class="right small">${r.o.bat??''}</td><td class="right small">${r.o.speed??''}</td>`;
+    tbO.appendChild(tr);
+  });
+
+  // pitchers
+  const pData = players.map(p => {
+    const s = scores[p.id]?.pitcher || {};
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total!=null?s.total:computePitcherTotal(s), s };
+  }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
+  const tbP = byId('pitchRankTable').querySelector('tbody');
+  tbP.innerHTML='';
+  pData.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td class="mono">${r.id}</td><td>${r.name}</td><td class="right">${r.total.toFixed(2)}</td>
+      <td class="right small">${r.s.spct!=null? r.s.spct.toFixed(0)+'%':''}</td>
+      <td class="right small">${r.s.command??''}</td><td class="right small">${r.s.mech??''}</td>
+      <td class="right small">${r.s.mph??''}</td>`;
+    tbP.appendChild(tr);
+  });
+
+  // catchers
+  const cData = players.map(p => {
+    const s = scores[p.id]?.catcher || {};
+    return { id:p.id, name:`${p.first||''} ${p.last||''}`, total:s.total!=null?s.total:computeCatcherTotal(s), s };
+  }).filter(x => x.total!=null).sort((a,b)=> b.total - a.total);
+  const tbC = byId('catchRankTable').querySelector('tbody');
+  tbC.innerHTML='';
+  cData.forEach((r,i)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i+1}</td><td class="mono">${r.id}</td><td>${r.name}</td><td class="right">${r.total.toFixed(2)}</td>
+      <td class="right small">${r.s.recv??''}</td><td class="right small">${r.s.block??''}</td>
+      <td class="right small">${r.s.xfer??''}/${r.s.acc??''}</td><td class="right small">${r.s.pop??''}</td>`;
+    tbC.appendChild(tr);
+  });
+
+  // quick add to draft
+  [tbO, tbP, tbC].forEach(tb => {
+    Array.from(tb.querySelectorAll('tr')).forEach(tr => {
+      tr.style.cursor = 'pointer';
+      tr.title = 'Tap to add to Draft Board';
+      tr.addEventListener('click', () => {
+        const id = tr.children[1].textContent.trim();
+        addToDraft(id);
+      });
+    });
+  });
+}
+
+/* ========= Draft ========= */
+function renderDraft(){
+  const div = byId('draftList');
+  div.innerHTML='';
+  for(let i=0;i<12;i++){
+    const id = drafted[i];
+    const p = id ? findPlayer(id) : null;
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = id ? `
+      <div class="flex" style="justify-content:space-between">
+        <div>
+          <div class="chip"><span class="dot"></span><span class="mono">${id}</span></div>
+          <div><strong>${(p?.first||'') + ' ' + (p?.last||'')}</strong></div>
+          <div class="small muted">${p?.bats||'?'}/${p?.throws||'?'} ${p?.wPitch?'<span class="tag">P</span>':''} ${p?.wCatch?'<span class="tag">C</span>':''}</div>
+        </div>
+        <div>
+          <button class="btn btn-sm danger" data-idx="${i}">Remove</button>
+        </div>
+      </div>`
+    : `
+      <div class="small muted">Slot ${i+1}</div>
+      <div><em>Empty</em></div>
+    `;
+    div.appendChild(card);
+  }
+  div.querySelectorAll('button').forEach(b => {
+    b.addEventListener('click', ()=>{
+      const idx = Number(b.dataset.idx);
+      drafted.splice(idx,1);
+      saveDraft();
+      renderDraft();
+    });
+  });
+}
+
+function addToDraft(id){
+  if(!id) return;
+  if(drafted.includes(id)){ alert('Already on your board.'); return; }
+  if(drafted.length>=12){ alert('Roster is full (12). Remove someone first.'); return; }
+  if(!findPlayer(id)){ alert('Unknown ID: '+id); return; }
+  drafted.push(id);
+  saveDraft();
+  renderDraft();
+  alert('Added '+id+' to your Draft Board.');
+}
+
+/* ========= Settings ========= */
+function renderSettings(){
+  // overall
+  byId('w_ov_arm').value = settings.overallWeights.arm;
+  byId('w_ov_field').value = settings.overallWeights.fielding;
+  byId('w_ov_receiving').value = settings.overallWeights.receiving;
+  byId('w_ov_footwork').value = settings.overallWeights.footwork || 0;
+  byId('w_ov_iq').value = settings.overallWeights.iq || 0;
+  byId('w_ov_flyball').value = settings.overallWeights.flyball;
+  byId('w_ov_bat').value = settings.overallWeights.bat;
+  byId('w_ov_speed').value = settings.overallWeights.speed;
+  updateWeightsSums();
+
+  // thresholds
+  byId('t_speed_5').value = settings.speedThresholds.s5;
+  byId('t_speed_4').value = settings.speedThresholds.s4;
+  byId('t_speed_3').value = settings.speedThresholds.s3;
+  byId('t_speed_2').value = settings.speedThresholds.s2;
+
+  byId('t_pop_5').value = settings.popThresholds.s5;
+  byId('t_pop_4').value = settings.popThresholds.s4;
+  byId('t_pop_3').value = settings.popThresholds.s3;
+  byId('t_pop_2').value = settings.popThresholds.s2;
+
+  byId('t_velo_5').value = settings.veloThresholds.s5;
+  byId('t_velo_4').value = settings.veloThresholds.s4;
+  byId('t_velo_3').value = settings.veloThresholds.s3;
+  byId('t_velo_2').value = settings.veloThresholds.s2;
+
+  // pitcher & catcher defaults if not present
+  if(!byId('w_pi_spct').value){
+    byId('w_pi_spct').value = 30;
+    byId('w_pi_cmd').value = 25;
+    byId('w_pi_mech').value = 20;
+    byId('w_pi_velo').value = 15;
+    byId('w_pi_comp').value = 5;
+    byId('w_pi_pfp').value  = 5;
+  }
+  if(!byId('w_ca_recv').value){
+    byId('w_ca_recv').value = 25;
+    byId('w_ca_block').value= 20;
+    byId('w_ca_xfer').value = 15;
+    byId('w_ca_acc').value  = 15;
+    byId('w_ca_pop').value  = 10;
+    byId('w_ca_lead').value = 10;
+    byId('w_ca_stam').value = 5;
+  }
+  updateWeightsSums();
+}
+
+function updateWeightsSums(){
+  const sumO = ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed']
+    .map(id=>Number(byId(id).value||0)).reduce((a,b)=>a+b,0);
+  byId('sumOverall').textContent = sumO;
+
+  const sumP = ['w_pi_spct','w_pi_cmd','w_pi_mech','w_pi_velo','w_pi_comp','w_pi_pfp']
+    .map(id=>Number(byId(id).value||0)).reduce((a,b)=>a+b,0);
+  byId('sumPitch').textContent = sumP;
+
+  const sumC = ['w_ca_recv','w_ca_block','w_ca_xfer','w_ca_acc','w_ca_pop','w_ca_lead','w_ca_stam']
+    .map(id=>Number(byId(id).value||0)).reduce((a,b)=>a+b,0);
+  byId('sumCatch').textContent = sumC;
+}
+
+function normalizeWeights(ids){
+  const vals = ids.map(id=>Number(byId(id).value||0));
+  const sum = vals.reduce((a,b)=>a+b,0) || 1;
+  const norm = vals.map(v=> Math.round((v/sum)*100));
+  let diff = 100 - norm.reduce((a,b)=>a+b,0);
+  for(let i=0; diff!==0; i=(i+1)%norm.length){
+    if(diff>0){ norm[i]++; diff--; }
+    else { if(norm[i]>0){ norm[i]--; diff++; } }
+  }
+  ids.forEach((id, i)=> { byId(id).value = norm[i]; });
+  updateWeightsSums();
+  saveSettingsFromUi();
+}
+
+function saveSettingsFromUi(){
+  settings.overallWeights = {
+    arm: Number(byId('w_ov_arm').value||0),
+    fielding: Number(byId('w_ov_field').value||0),
+    receiving: Number(byId('w_ov_receiving').value||0),
+    footwork: Number(byId('w_ov_footwork').value||0),
+    iq: Number(byId('w_ov_iq').value||0),
+    flyball: Number(byId('w_ov_flyball').value||0),
+    bat: Number(byId('w_ov_bat').value||0),
+    speed: Number(byId('w_ov_speed').value||0)
+  };
+  settings.speedThresholds = {
+    s5: Number(byId('t_speed_5').value||0),
+    s4: Number(byId('t_speed_4').value||0),
+    s3: Number(byId('t_speed_3').value||0),
+    s2: Number(byId('t_speed_2').value||0)
+  };
+  settings.popThresholds = {
+    s5: Number(byId('t_pop_5').value||0),
+    s4: Number(byId('t_pop_4').value||0),
+    s3: Number(byId('t_pop_3').value||0),
+    s2: Number(byId('t_pop_2').value||0)
+  };
+  settings.veloThresholds = {
+    s5: Number(byId('t_velo_5').value||0),
+    s4: Number(byId('t_velo_4').value||0),
+    s3: Number(byId('t_velo_3').value||0),
+    s2: Number(byId('t_velo_2').value||0)
+  };
+  saveSettings();
+  updateKpis();
+}
+
+/* ========= Export / Import ========= */
+function toCSV(rows){
+  return rows.map(r => r.map(v => {
+    if(v==null) return '';
+    const s = (''+v).replace(/"/g,'""');
+    return /[",\n]/.test(s) ? '"'+s+'"' : s;
+  }).join(',')).join('\\n');
+}
+
+function exportPlayersCSV(){
+  const header = [
+    'ID','First','Last','Age','Bats','Throws','P?','C?','Notes',
+    'Overall_Arm','Overall_Field','Overall_Hands','Overall_Footwork','Overall_IQ','Overall_Fly','Overall_Bat','Overall_H1Time','Overall_SpeedScore','Overall_Total',
+    'Pitcher_Is','Pitcher_Strikes','Pitcher_TotalPitches','Pitcher_StrikePct','Pitcher_Command','Pitcher_Mechanics','Pitcher_VeloMPH','Pitcher_VeloScore','Pitcher_Composure','Pitcher_PFP','Pitcher_Secondary','Pitcher_Total',
+    'Catcher_Is','Catcher_Receiving','Catcher_Blocking','Catcher_Exchange','Catcher_ThrowAcc','Catcher_PopTime','Catcher_PopScore','Catcher_Leadership','Catcher_Stamina','Catcher_Total',
+    'Score_Notes'
+  ];
+  const rows = [header];
+  players.forEach(p => {
+    const S = scores[p.id] || {};
+    const sO = S.overall || {};
+    const sP = S.pitcher || {};
+    const sC = S.catcher || {};
+    const oTotal = (sO.total!=null)? sO.total : computeOverallTotal(sO);
+    const pTotal = (sP.total!=null)? sP.total : computePitcherTotal(sP);
+    const cTotal = (sC.total!=null)? sC.total : computeCatcherTotal(sC);
+    rows.push([
+      p.id, p.first||'', p.last||'', p.age||'', p.bats||'', p.throws||'', p.wPitch?'Y':'', p.wCatch?'Y':'', (S.notes)||p.notes||'',
+      sO.arm??'', sO.fielding??'', sO.receiving??'', sO.footwork??'', sO.iq??'', sO.flyball??'', sO.bat??'', sO.h1time??'', sO.speed??'', oTotal!=null?oTotal.toFixed(2):'',
+      (sP.is?'Y':'')||'', sP.strikes??'', sP.total??'', sP.spct!=null? (sP.spct.toFixed(0)+'%'):'', sP.command??'', sP.mech??'', sP.mph??'', sP.mphScore??'', sP.comp??'', sP.pfp??'', sP.secondary?'Y':'', pTotal!=null?pTotal.toFixed(2):'',
+      (sC.is?'Y':'')||'', sC.recv??'', sC.block??'', sC.xfer??'', sC.acc??'', sC.pop??'', sC.popScore??'', sC.lead??'', sC.stam??'', cTotal!=null?cTotal.toFixed(2):'',
+      (S.notes)||''
+    ]);
+  });
+  return toCSV(rows);
+}
+
+function exportPitchersCSV(){
+  const rows = [['ID','Name','Score','Strike%','Command','Mechanics','Velo','Composure','PFP','Secondary']];
+  players.forEach(p => {
+    const s = scores[p.id]?.pitcher || {};
+    const total = s.total!=null ? s.total : computePitcherTotal(s);
+    if(total!=null){
+      rows.push([p.id, (p.first||'')+' '+(p.last||''), total, s.spct!=null? s.spct.toFixed(0)+'%':'',
+        s.command??'', s.mech??'', s.mph??'', s.comp??'', s.pfp??'', s.secondary?'Y':'']);
+    }
+  });
+  return toCSV(rows);
+}
+
+function exportCatchersCSV(){
+  const rows = [['ID','Name','Score','Receiving','Blocking','Exchange','ThrowAcc','PopTime','Leadership','Stamina']];
+  players.forEach(p => {
+    const s = scores[p.id]?.catcher || {};
+    const total = s.total!=null ? s.total : computeCatcherTotal(s);
+    if(total!=null){
+      rows.push([p.id, (p.first||'')+' '+(p.last||''), total, s.recv??'', s.block??'', s.xfer??'', s.acc??'', s.pop??'', s.lead??'', s.stam??'']);
+    }
+  });
+  return toCSV(rows);
+}
+
+function exportJSON(){
+  const payload = {players, scores, settings, drafted, exportedAt: new Date().toISOString()};
+  return JSON.stringify(payload, null, 2);
+}
+
+function download(filename, text){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type: 'text/plain'}));
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+function importJSON(file){
+  const reader = new FileReader();
+  reader.onload = e => {
+    try{
+      const data = JSON.parse(e.target.result);
+      if(data.players && data.scores && data.settings){
+        players = data.players; savePlayers();
+        scores = data.scores; saveScores();
+        settings = data.settings; saveSettings();
+        drafted = data.drafted || []; saveDraft();
+        renderPlayers(); renderSettings(); renderBatch(); renderRankings(); renderDraft();
+        alert('Import successful.');
+      }else{
+        alert('Invalid file format.');
+      }
+    }catch(err){
+      alert('Failed to import: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function quickBackup(){
+  download('9u_draft_backup.json', exportJSON());
+}
+function quickRestore(file){
+  importJSON(file);
+}
+
+/* ========= Event Listeners ========= */
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  renderPlayers();
+  renderSettings();
+  initLinkedInputs();
+
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+  byId('btnAddPlayer').addEventListener('click', addOrUpdatePlayer);
+  byId('btnClearPlayer').addEventListener('click', clearPlayerForm);
+  byId('playerSearch').addEventListener('input', renderPlayers);
+  byId('playersTable').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if(!btn) return;
+    const id = btn.dataset.id, act = btn.dataset.act;
+    if(act==='edit'){
+      const p = findPlayer(id); if(p) { populatePlayerForm(p); window.scrollTo({top:0,behavior:'smooth'}); }
+    }else if(act==='del'){
+      deletePlayer(id);
+    }
+  });
+
+  byId('selectById').addEventListener('change', () => {
+    const id = byId('selectById').value;
+    if(!id) return;
+    loadScoreForm(id);
+  });
+  ['ov_h1_time','pi_strikes','pi_total','pi_mph','ca_pop'].forEach(id => byId(id).addEventListener('input', updateKpis));
+  document.querySelectorAll('#score input[type="range"], #score input[type="number"]').forEach(el => el.addEventListener('input', updateKpis));
+
+  byId('btnSaveScores').addEventListener('click', saveScoresFromForm);
+  byId('btnClearScores').addEventListener('click', clearScoresForm);
+
+  byId('btnRefreshRanks').addEventListener('click', renderRankings);
+  byId('btnExportPitchCSV').addEventListener('click', () => download('pitchers.csv', exportPitchersCSV()));
+  byId('btnExportCatchCSV').addEventListener('click', () => download('catchers.csv', exportCatchersCSV()));
+
+  byId('btnDraftAdd').addEventListener('click', () => {
+    addToDraft(byId('draftAddId').value.trim());
+    byId('draftAddId').value='';
+  });
+  byId('btnClearDraft').addEventListener('click', () => {
+    if(confirm('Clear all 12 draft slots?')){ drafted=[]; saveDraft(); renderDraft(); }
+  });
+
+  ['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed',
+   'w_pi_spct','w_pi_cmd','w_pi_mech','w_pi_velo','w_pi_comp','w_pi_pfp',
+   'w_ca_recv','w_ca_block','w_ca_xfer','w_ca_acc','w_ca_pop','w_ca_lead','w_ca_stam',
+   't_speed_5','t_speed_4','t_speed_3','t_speed_2',
+   't_pop_5','t_pop_4','t_pop_3','t_pop_2',
+   't_velo_5','t_velo_4','t_velo_3','t_velo_2'
+  ].forEach(id => byId(id).addEventListener('input', () => { updateWeightsSums(); saveSettingsFromUi(); }));
+  byId('btnNormOverall').addEventListener('click', () => normalizeWeights(['w_ov_arm','w_ov_field','w_ov_receiving','w_ov_footwork','w_ov_iq','w_ov_flyball','w_ov_bat','w_ov_speed']));
+  byId('btnNormPitch').addEventListener('click', () => normalizeWeights(['w_pi_spct','w_pi_cmd','w_pi_mech','w_pi_velo','w_pi_comp','w_pi_pfp']));
+  byId('btnNormCatch').addEventListener('click', () => normalizeWeights(['w_ca_recv','w_ca_block','w_ca_xfer','w_ca_acc','w_ca_pop','w_ca_lead','w_ca_stam']));
+
+  byId('btnExportJSON').addEventListener('click', () => download('9u_draft_data.json', exportJSON()));
+  byId('btnExportCSV').addEventListener('click', () => {
+    const csv = exportPlayersCSV();
+    download('players_all.csv', csv);
+  });
+  byId('importFile').addEventListener('change', e => {
+    const file = e.target.files[0]; if(file) importJSON(file);
+    e.target.value='';
+  });
+
+  byId('btnPrint').addEventListener('click', ()=> window.print());
+  byId('btnBackup').addEventListener('click', quickBackup);
+  byId('backupFile').addEventListener('change', e => {
+    const file = e.target.files[0]; if(file) quickRestore(file);
+    e.target.value='';
+  });
+
+  renderRankings();
+  renderDraft();
+});
+</script>
+
+<script>
+// Register Service Worker for offline launch
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      try {
+        var pill = document.createElement('span');
+        pill.className = 'pill';
+        pill.textContent = 'Offline ready';
+        var title = document.querySelector('header .title');
+        if (title) title.appendChild(pill);
+      } catch(e){}
+      console.log('Service worker registered:', reg.scope);
+    }).catch(function(err) {
+      console.log('Service worker registration failed:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
